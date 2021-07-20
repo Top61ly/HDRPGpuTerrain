@@ -26,6 +26,11 @@ struct InstanceData
     float scaleY;*/
 };
 
+struct TerrainInstanceData
+{
+    float3 pos;
+    float scale;
+};
 
 inline BoundingRect CreateBoundingRect(BoundingBox box)
 {
@@ -123,5 +128,14 @@ float4x4 ToMatrix(InstanceData data)
     return mat;
 }
 
+float4x4 ToMatrix(TerrainInstanceData data)
+{
+    float4x4 mat;
+    mat._11_21_31_41 = float4(data.scale,0.0,0.0,0.0);
+    mat._12_22_32_42 = float4(0.0,data.scale,0.0,0.0);
+    mat._13_23_33_43 = float4(0.0,0.0,data.scale,0.0);
+    mat._14_24_34_44 = float4(data.pos, 1.0);
+    return mat;
+}
 
 #endif

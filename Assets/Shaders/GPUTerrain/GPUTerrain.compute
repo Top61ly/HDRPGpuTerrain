@@ -1,0 +1,26 @@
+#pragma kernel TerrainNodeBuild
+#pragma kernel TerrainLODMap
+#pragma kernel TerrainVisibleRender
+
+#include "./GPUTerrainUtility.hlsl"
+
+#define MAXTERRAINLOD 5 //0,1,2,3,4,5
+#define TOTALTERRAINTILES 
+
+[numthreads(1,1,1)]
+void TerrainNodeBuild (uint3 id : SV_DispatchThreadID)
+{
+  
+}
+
+[numthreads(1,1,1)]
+void TerrainLODMap (uint3 id : SV_DISPATCHTHREADID)
+{
+
+}
+
+[numthreads(1,1,1)]
+void TerrainVisibleRender (uint3 id : SV_DISPATCHTHREADID)
+{
+
+}
