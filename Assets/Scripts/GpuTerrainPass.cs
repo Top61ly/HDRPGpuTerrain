@@ -35,7 +35,7 @@ class GpuTerrainPass : CustomPass
     [SerializeField] private ComputeShader m_TerrainBuildComputeShader;
     [SerializeField] private ComputeShader m_CopyBufferComputeShader;
 
-    const string s_TerrainNodeBuildKernelName = "TerrainNodeListBuild";
+    const string s_TerrainNodeBuildKernelName = "TerrainNodeBuild";
     const string s_TerrainLodMapKernelName = "TerrainLODMap";
     const string s_TerrainVisibleRenderKernelName = "TerrainVisibleRender";
     const string s_CopyBufferKernelName = "CSCopyBuffer";

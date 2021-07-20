@@ -1,5 +1,4 @@
-#pragma kernel CSVFXCopyBuffer
-
+#pragma kernel CSCopyBuffer
 
 #include "HLSLSupport.cginc"
 
@@ -15,7 +14,7 @@ RWByteAddressBuffer dstBuffer;
 #define NB_THREADS_PER_GROUP 64
 
 [numthreads(NB_THREADS_PER_GROUP,1,1)]
-void CSVFXCopyBuffer(uint3 id : SV_DispatchThreadID)
+void CSCopyBuffer(uint3 id : SV_DispatchThreadID)
 {
     if (id.x < size) /* One dword is copied by thread */
     {

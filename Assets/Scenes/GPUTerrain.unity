@@ -391,6 +391,8 @@ MonoBehaviour:
           terrianWidth: 10240
         m_TerrainMesh: {fileID: 4300000, guid: 9f0aaea0313224340a3607dda693e793, type: 2}
         m_IndirectMaterial: {fileID: 2100000, guid: b921b341a1143bf4fb0b799e6179ea9e, type: 2}
+        m_TerrainBuildComputeShader: {fileID: 7200000, guid: 9755dea094fe96d46b98f0e696006178, type: 3}
+        m_CopyBufferComputeShader: {fileID: 7200000, guid: 1c05f3e1db0f6dd46b79bae162b576ae, type: 3}
 --- !u!4 &1025778954
 Transform:
   m_ObjectHideFlags: 0
