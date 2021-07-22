@@ -4,13 +4,28 @@
 
 #include "./GPUTerrainUtility.hlsl"
 
-#define MAXTERRAINLOD 5 //0,1,2,3,4,5
-#define TOTALTERRAINTILES 
+AppendStructuredBuffer<uint2> appendNodeList;
+ConsumeStructuredBuffer<uint2> consumeNodeList;
+AppendStructuredBuffer<uint3> finalNodeList;
+
+uniform float4 _worldParams;
+uniform uint _curLodLevel;
+uniform float3 _cameraPos;
+
+bool CalcuteSubdivide(uint2 node)
+{
+    float3 nodePositionWS = GetNodeWorldPosition(node, _curLodLevel);
+    //TODO: Currently we move camerapos to xz plane
+    float3 cameraPos = float3(_cameraPos.x,0,_cameraPos.z);
+    float dist = distance(_cameraPos, nodePositionWS);
+
+    return false;
+}
 
 [numthreads(1,1,1)]
 void TerrainNodeBuild (uint3 id : SV_DispatchThreadID)
 {
-  
+    uint2 curNode = consumeNodeList.Consume();
 }
 
 [numthreads(1,1,1)]

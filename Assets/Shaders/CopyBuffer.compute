@@ -1,26 +1,13 @@
-#pragma kernel CSCopyBuffer
+#pragma kernel CSCopyAppendtoConsumeBuffer
 
-#include "HLSLSupport.cginc"
+#include "./Utility.hlsl"
 
-CBUFFER_START(Uniform)
-    uint dstOffset;
-    uint srcOffset;
-    uint size;
-CBUFFER_END
+ConsumeStructuredBuffer<TerrainInstanceData> srcConsumeBuffer;
+AppendStructuredBuffer<TerrainInstanceData> dstAppendBuffer;
 
-ByteAddressBuffer srcBuffer;
-RWByteAddressBuffer dstBuffer;
-
-#define NB_THREADS_PER_GROUP 64
-
-[numthreads(NB_THREADS_PER_GROUP,1,1)]
-void CSCopyBuffer(uint3 id : SV_DispatchThreadID)
+[numthreads(1,1,1)]
+void CSCopyAppendtoConsumeBuffer(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x < size) /* One dword is copied by thread */
-    {
-        uint srcAddress = (id.x + srcOffset) << 2;
-        uint dstAddress = (id.x + dstOffset) << 2;
-        uint load = srcBuffer.Load(srcAddress);
-        dstBuffer.Store(dstAddress, load);
-    }
+    TerrainInstanceData node = srcConsumeBuffer.Consume();
+    dstAppendBuffer.Append(node);
 }
