@@ -4,6 +4,7 @@ uniform float offset0;
 uniform float offset1;
 uniform float offset2;
 uniform float offset3;
+uniform float offset4;
 uniform float minMountainDistance = 1000.0f;
 
 float GetBaseHeight(float wx, float wy)
@@ -62,7 +63,7 @@ float AddRivers(float wx, float wy, float h)
 {
     // float num;
     // float v;
-    // this.GetRiverWeight(wx, wy, out num, out v);
+    // GetRiverWeight(wx, wy, out num, out v);
     // if (num <= 0f)
     // {
     //     return h;
@@ -224,4 +225,126 @@ float GetMenuHeight(float wx, float wy)
     float num = unity_perlinnoise(wx * 0.01f, wy * 0.01f) * unity_perlinnoise(wx * 0.02f, wy * 0.02f);
     num += unity_perlinnoise(wx * 0.05f, wy * 0.05f) * unity_perlinnoise(wx * 0.1f, wy * 0.1f) * num * 0.5f;
     return baseHeight + num * 0.1f + unity_perlinnoise(wx * 0.1f, wy * 0.1f) * 0.01f + unity_perlinnoise(wx * 0.4f, wy * 0.4f) * 0.003f;
+}
+
+// enum Biome
+// {
+// 	None,
+// 	Meadows,
+// 	Swamp,
+// 	Mountain,
+// 	BlackForest,
+// 	Plains,
+// 	AshLands,
+// 	DeepNorth,
+// 	Ocean,
+// 	Mistlands,
+// 	BiomesMax
+// }
+
+#define BIOME_NONE 0;
+#define BIOME_MEADOWS 1;
+#define BIOME_SWAMP 2;
+#define BIOME_MOUNTAIN 3;
+#define BIOME_BLACKFOREST 4;
+#define BIOME_PLAINS 5;
+#define BIOME_ASHLANDS 6;
+#define BIOME_DEEPNORTH 7;
+#define BIOME_OCEAN 8;
+#define BIOME_MISTLAND 9;
+#define BIOME_BIOMEMAX 10;
+
+int GetBiome(float wx, float wy)
+{
+    float magnitude = Length(wx,wy);
+    float baseHeight = GetBaseHeight(wx,wy);
+    float worldAngle = GetWorldAngle(wx,wy);
+    
+    if (Length(wx, wy + -4000.0f) > 12000.0f + worldAngle)
+    {
+        return BIOME_ASHLANDS;//Heightmap.Biome.AshLands;
+    }
+    
+    if (baseHeight <= 0.02f)
+    {
+        return BIOME_OCEAN;//Heightmap.Biome.Ocean;
+    }
+
+    [branch]
+    if (Length(wx, wy + 4000.0f) > 12000.0f + worldAngle)
+    {
+        if (baseHeight > 0.4f)
+        {
+            return BIOME_MOUNTAIN//Heightmap.Biome.Mountain;
+        }
+        return BIOME_DEEPNORTH;//Heightmap.Biome.DeepNorth;
+    }
+    else
+    {
+        if (baseHeight > 0.4f)
+        {
+            return BIOME_MOUNTAIN;//Heightmap.Biome.Mountain;
+        }
+        if (unity_perlinnoise((offset0 + wx) * 0.001f, (offset0 + wy) * 0.001f) > 0.6f && magnitude > 2000.0f && magnitude < 8000.0f && baseHeight > 0.05f && baseHeight < 0.25f)
+        {
+            return BIOME_SWAMP;//Heightmap.Biome.Swamp;
+        }
+        if (unity_perlinnoise((offset4 + wx) * 0.001f, (offset4 + wy) * 0.001f) > 0.5f && magnitude > 6000.0f + worldAngle && magnitude < 10000.0f)
+        {
+            return BIOME_MISTLAND;//Heightmap.Biome.Mistlands;
+        }
+        if (unity_perlinnoise((offset1 + wx) * 0.001f, (offset1 + wy) * 0.001f) > 0.4f && magnitude > 3000.0f + worldAngle && magnitude < 8000.0f)
+        {
+            return BIOME_PLAINS;//Heightmap.Biome.Plains;
+        }
+        if (unity_perlinnoise((offset2 + wx) * 0.001f, (offset2 + wy) * 0.001f) > 0.4f && magnitude > 600.0f + worldAngle && magnitude < 6000.0f)
+        {
+            return BIOME_BLACKFOREST;//Heightmap.Biome.BlackForest;
+        }
+        if (magnitude > 5000.0f + worldAngle)
+        {
+            return BIOME_BLACKFOREST;//Heightmap.Biome.BlackForest;
+        }
+        return BIOME_MEADOWS;//Heightmap.Biome.Meadows;
+    }
+}
+
+float GetBiomeHeight(float wx, float wy)
+{
+    int biome = GetBiome(wx,wy);
+
+    // [branch]
+    // switch(biome)
+    // {
+    //     case 0:
+    //         return 0.0f;
+    //     case 1:
+    //         return 1.0f;
+    //     default:
+    //         return 2.0f;
+    // }
+    [branch] 
+    switch(biome)
+    {
+        case 1:
+            return GetMeadowsHeight(wx,wy);
+        case 2:
+            return GetMarshHeight(wx,wy);
+        case 3:
+            return GetSnowMountainHeight(wx,wy);
+        case 4:
+            return GetForestHeight(wx,wy);
+        case 5:
+            return GetPlainsHeight(wx,wy);
+        case 6:
+            return GetAshlandsHeight(wx,wy);
+        case 7:
+            return GetDeepNorthHeight(wx,wy);
+        case 8:
+            return GetOceanHeight(wx,wy);
+        case 9:
+            return GetForestHeight(wx,wy);
+        default:
+            return 0.0f; 
+    }
 }

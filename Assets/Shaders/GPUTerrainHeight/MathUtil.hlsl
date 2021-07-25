@@ -8,6 +8,11 @@ float Length(float a, float b)
     return length(float2(a,b));
 }
 
+float GetWorldAngle(float x, float y)
+{
+    return sin(atan2(x,y)*20.0f);
+}
+
 //Unity Perlin Noise Node Generated Code
 float2 unity_gradientNoise_dir(float2 p)
 {
