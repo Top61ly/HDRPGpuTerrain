@@ -37,6 +37,7 @@ float unity_gradientNoise(float2 p)
 
 float unity_perlinnoise(float u, float v)
 {
-    float ret = unity_gradientNoise(float2(u,v))+0.5;
+    float scale = 1.0f;
+    float ret = unity_gradientNoise(float2(u,v)*scale)+0.5;
     return ret;
 }

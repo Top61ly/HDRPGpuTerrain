@@ -1,10 +1,10 @@
 #include "./MathUtil.hlsl"
 
-uniform float offset0;
-uniform float offset1;
-uniform float offset2;
-uniform float offset3;
-uniform float offset4;
+uniform float offset0 = 200.0f;
+uniform float offset1 = 1000.0f;
+uniform float offset2 = -500.0f;
+uniform float offset3 = -1000.0f;
+uniform float offset4 = 5000.0f;
 uniform float minMountainDistance = 1000.0f;
 
 float GetBaseHeight(float wx, float wy)
@@ -81,7 +81,7 @@ float AddRivers(float wx, float wy, float h)
     //     h = Mathf.Lerp(h, num3, t2);
     // }
     // return h;
-    return 0.0f;
+    return h;
 }
 
 float GetMarshHeight(float wx, float wy)
@@ -242,17 +242,17 @@ float GetMenuHeight(float wx, float wy)
 // 	BiomesMax
 // }
 
-#define BIOME_NONE 0;
-#define BIOME_MEADOWS 1;
-#define BIOME_SWAMP 2;
-#define BIOME_MOUNTAIN 3;
-#define BIOME_BLACKFOREST 4;
-#define BIOME_PLAINS 5;
-#define BIOME_ASHLANDS 6;
-#define BIOME_DEEPNORTH 7;
-#define BIOME_OCEAN 8;
-#define BIOME_MISTLAND 9;
-#define BIOME_BIOMEMAX 10;
+// #define BIOME_NONE 0;
+// #define BIOME_MEADOWS 1;
+// #define BIOME_SWAMP 2;
+// #define BIOME_MOUNTAIN 3;
+// #define BIOME_BLACKFOREST 4;
+// #define BIOME_PLAINS 5;
+// #define BIOME_ASHLANDS 6;
+// #define BIOME_DEEPNORTH 7;
+// #define BIOME_OCEAN 8;
+// #define BIOME_MISTLAND 9;
+// #define BIOME_BIOMEMAX 10;
 
 int GetBiome(float wx, float wy)
 {
@@ -262,12 +262,12 @@ int GetBiome(float wx, float wy)
     
     if (Length(wx, wy + -4000.0f) > 12000.0f + worldAngle)
     {
-        return BIOME_ASHLANDS;//Heightmap.Biome.AshLands;
+        return 6;//Heightmap.Biome.AshLands;
     }
     
     if (baseHeight <= 0.02f)
     {
-        return BIOME_OCEAN;//Heightmap.Biome.Ocean;
+        return 8;//Heightmap.Biome.Ocean;
     }
 
     [branch]
@@ -275,37 +275,37 @@ int GetBiome(float wx, float wy)
     {
         if (baseHeight > 0.4f)
         {
-            return BIOME_MOUNTAIN//Heightmap.Biome.Mountain;
+            return 3;//Heightmap.Biome.Mountain;
         }
-        return BIOME_DEEPNORTH;//Heightmap.Biome.DeepNorth;
+        return 7;//Heightmap.Biome.DeepNorth;
     }
     else
     {
         if (baseHeight > 0.4f)
         {
-            return BIOME_MOUNTAIN;//Heightmap.Biome.Mountain;
+            return 3;//Heightmap.Biome.Mountain;
         }
         if (unity_perlinnoise((offset0 + wx) * 0.001f, (offset0 + wy) * 0.001f) > 0.6f && magnitude > 2000.0f && magnitude < 8000.0f && baseHeight > 0.05f && baseHeight < 0.25f)
         {
-            return BIOME_SWAMP;//Heightmap.Biome.Swamp;
+            return 2;//Heightmap.Biome.Swamp;
         }
         if (unity_perlinnoise((offset4 + wx) * 0.001f, (offset4 + wy) * 0.001f) > 0.5f && magnitude > 6000.0f + worldAngle && magnitude < 10000.0f)
         {
-            return BIOME_MISTLAND;//Heightmap.Biome.Mistlands;
+            return 9;//Heightmap.Biome.Mistlands;
         }
         if (unity_perlinnoise((offset1 + wx) * 0.001f, (offset1 + wy) * 0.001f) > 0.4f && magnitude > 3000.0f + worldAngle && magnitude < 8000.0f)
         {
-            return BIOME_PLAINS;//Heightmap.Biome.Plains;
+            return 5;//Heightmap.Biome.Plains;
         }
         if (unity_perlinnoise((offset2 + wx) * 0.001f, (offset2 + wy) * 0.001f) > 0.4f && magnitude > 600.0f + worldAngle && magnitude < 6000.0f)
         {
-            return BIOME_BLACKFOREST;//Heightmap.Biome.BlackForest;
+            return 4;//Heightmap.Biome.BlackForest;
         }
         if (magnitude > 5000.0f + worldAngle)
         {
-            return BIOME_BLACKFOREST;//Heightmap.Biome.BlackForest;
+            return 4;//Heightmap.Biome.BlackForest;
         }
-        return BIOME_MEADOWS;//Heightmap.Biome.Meadows;
+        return 1;//Heightmap.Biome.Meadows;
     }
 }
 
@@ -348,3 +348,33 @@ float GetBiomeHeight(float wx, float wy)
             return 0.0f; 
     }
 }
+
+//TODO: Should add a keyword to represent a Blend Array
+float4 GetBlendMask(float wx, float wy)
+{
+    int biome = GetBiome(wx,wy);
+
+    [branch] 
+    switch(biome)
+    {
+        case 1:
+            return float4(1.0f,0,0,0);
+        case 2:
+            return float4(1.0f,0,0,0);
+        case 3:
+            return float4(0,1.0f,0,0);
+        case 4:
+            return float4(0,0,1.0f,0);
+        case 5:
+            return float4(0,0,0,1.0f);
+        case 6:
+            return float4(1.0f,0,0,1.0f);
+        case 7:
+            return float4(0,1.0f,0,0);
+        case 8:
+            return float4(0,0,0,0);
+        case 9:
+            return float4(0,0,1.0f,1.0f);
+        default:
+            return float4(0,0,0,0); 
+    }}
