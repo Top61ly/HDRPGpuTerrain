@@ -377,4 +377,46 @@ float4 GetBlendMask(float wx, float wy)
             return float4(0,0,1.0f,1.0f);
         default:
             return float4(0,0,0,0); 
-    }}
+    }
+}
+
+//TODO: Should change to maxlayer's number
+void VertexMask(float wx, float wy, out float4 mask1)
+{
+    int biome = GetBiome(wx,wy);
+    
+    [branch] 
+    switch(biome)
+    {
+        case 1:
+            mask1.x = 1.0f;
+            break;
+        case 2:
+            mask1.x = 1.0f;
+            break;
+        case 3:
+            mask1.y = 1.0f;
+            break;
+        case 4:
+            mask1.z = 1.0f;
+            break;
+        case 5:
+            mask1.w = 1.0f;
+            break;
+        case 6:
+            mask1.x = 1.0f;
+            mask1.w = 1.0f;
+            break;
+        case 7:
+            mask1.y = 1.0f;
+            break;
+        // case 8:
+        //     break;
+        case 9:
+            mask1.y = 1.0f;
+            mask1.w = 1.0f;
+            break;
+        default:
+            return;
+    }
+}
