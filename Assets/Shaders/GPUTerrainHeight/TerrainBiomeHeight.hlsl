@@ -12,13 +12,13 @@ struct River
     uint2 position;
     uint startIndex;
     uint length;
-}
+};
 
 struct RiverPoint
 {
     float2 position;
     float weight;
-}
+};
 
 StructuredBuffer<River> riverList;
 StructuredBuffer<RiverPoint> riverPointList;
@@ -31,27 +31,24 @@ uint2 GetRiverGrid(float wx, float wy)
     return grid;
 }
 
-void GetWeight(uint startIndex, uint length, float wx, float wy, out float weight, out float width)
+void GetWeight(uint startIndex, uint arrayLength, float wx, float wy, out float weight, out float width)
 {
     float2 pos = float2(wx,wy);
-    float weight = 0.0f;
-    float width = 0.0f;
-    float num = 0f;
-    float num2 = 0f;
+    //float weight = 0.0f;
+    // float width = 0.0f;
+    float num = 0.0f;
+    float num2 = 0.0f;
 
-    [unroll]
-    for(uint i = 0; i<length; i++)
-    //foreach (WorldGenerator.RiverPoint riverPoint in points)
+    for(uint i = 0; i<arrayLength; i++)
     {
         RiverPoint riverPoint = riverPointList[i+startIndex];
-        //float num3 = Vector2.SqrMagnitude(riverPoint.p - b);
         float num3 = sqrt(length(riverPoint.position - pos));
         
         [branch]
         if (num3 < pow(riverPoint.weight,2))
         {
             float num4 = sqrt(num3);
-            float num5 = 1f - num4 / riverPoint.weight;
+            float num5 = 1.0f - num4 / riverPoint.weight;
             if (num5 > weight)
             {
                 weight = num5;
@@ -70,26 +67,24 @@ void GetWeight(uint startIndex, uint length, float wx, float wy, out float weigh
 
 void GetRiverWeight(float wx, float wy, out float weight, out float width)
 {
-    float weight = 0.0f;
-    float width = 0.0f;
-
     uint2 riverGrid = GetRiverGrid(wx, wy);
     River river = riverList[riverGrid.x*160+riverGrid.y];
-    GetWeight(river.startIndex, river.length, wx, wy, out weight, out width)
+    GetWeight(river.startIndex, river.length, wx, wy, weight, width);
 }
 
 float AddRivers(float wx, float wy, float h)
 {
+    return h;
     float num = 0.0f;
     float v = 0.0f;
-    GetRiverWeight(wx, wy, out num, out v);
+    GetRiverWeight(wx, wy, num, v);
 
     [branch]
     if (num <= 0.0f)
     {
         return h;
     }
-    
+
     float t = LerpStep(20.0f, 60.0f, v);
     float num2 = lerp(0.14f, 0.12f, t);
     float num3 = lerp(0.139f, 0.128f, t);
@@ -103,7 +98,7 @@ float AddRivers(float wx, float wy, float h)
     [branch]
     if (h > num3)
     {
-        float t2 = LerpStep(0.85f, 1f, num);
+        float t2 = LerpStep(0.85f, 1.0f, num);
         h = lerp(h, num3, t2);
     }
     return h;
