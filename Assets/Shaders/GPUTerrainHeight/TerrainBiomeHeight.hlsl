@@ -381,20 +381,8 @@ int GetBiome(float wx, float wy)
     }
 }
 
-float GetBiomeHeight(float wx, float wy)
+float GetBiomeHeight(int biome, float wx, float wy)
 {
-    int biome = GetBiome(wx,wy);
-
-    // [branch]
-    // switch(biome)
-    // {
-    //     case 0:
-    //         return 0.0f;
-    //     case 1:
-    //         return 1.0f;
-    //     default:
-    //         return 2.0f;
-    // }
     [branch] 
     switch(biome)
     {
