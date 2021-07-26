@@ -332,11 +332,13 @@ int GetBiome(float wx, float wy)
     float baseHeight = GetBaseHeight(wx,wy);
     float worldAngle = GetWorldAngle(wx,wy);
     
+    [branch]
     if (Length(wx, wy + -4000.0f) > 12000.0f + worldAngle)
     {
         return 6;//Heightmap.Biome.AshLands;
     }
     
+    [branch]
     if (baseHeight <= 0.02f)
     {
         return 8;//Heightmap.Biome.Ocean;
@@ -345,6 +347,7 @@ int GetBiome(float wx, float wy)
     [branch]
     if (Length(wx, wy + 4000.0f) > 12000.0f + worldAngle)
     {
+        [branch]
         if (baseHeight > 0.4f)
         {
             return 3;//Heightmap.Biome.Mountain;
@@ -353,26 +356,32 @@ int GetBiome(float wx, float wy)
     }
     else
     {
+        [branch]
         if (baseHeight > 0.4f)
         {
             return 3;//Heightmap.Biome.Mountain;
         }
+        [branch]
         if (unity_perlinnoise((offset0 + wx) * 0.001f, (offset0 + wy) * 0.001f) > 0.6f && magnitude > 2000.0f && magnitude < 8000.0f && baseHeight > 0.05f && baseHeight < 0.25f)
         {
             return 2;//Heightmap.Biome.Swamp;
         }
+        [branch]
         if (unity_perlinnoise((offset4 + wx) * 0.001f, (offset4 + wy) * 0.001f) > 0.5f && magnitude > 6000.0f + worldAngle && magnitude < 10000.0f)
         {
             return 9;//Heightmap.Biome.Mistlands;
         }
+        [branch]
         if (unity_perlinnoise((offset1 + wx) * 0.001f, (offset1 + wy) * 0.001f) > 0.4f && magnitude > 3000.0f + worldAngle && magnitude < 8000.0f)
         {
             return 5;//Heightmap.Biome.Plains;
         }
+        [branch]
         if (unity_perlinnoise((offset2 + wx) * 0.001f, (offset2 + wy) * 0.001f) > 0.4f && magnitude > 600.0f + worldAngle && magnitude < 6000.0f)
         {
             return 4;//Heightmap.Biome.BlackForest;
         }
+        [branch]
         if (magnitude > 5000.0f + worldAngle)
         {
             return 4;//Heightmap.Biome.BlackForest;
