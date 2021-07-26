@@ -7,6 +7,108 @@ uniform float offset3 = -1000.0f;
 uniform float offset4 = 5000.0f;
 uniform float minMountainDistance = 1000.0f;
 
+struct River
+{
+    uint2 position;
+    uint startIndex;
+    uint length;
+}
+
+struct RiverPoint
+{
+    float2 position;
+    float weight;
+}
+
+StructuredBuffer<River> riverList;
+StructuredBuffer<RiverPoint> riverPointList;
+
+uint2 GetRiverGrid(float wx, float wy)
+{
+    uint2 grid = uint2(0,0);
+    grid.x = (uint)floor((wx+5120.0f+32.0f)/64.0f);
+    grid.y = (uint)floor((wy+5120.0f+32.0f)/64.0f);
+    return grid;
+}
+
+void GetWeight(uint startIndex, uint length, float wx, float wy, out float weight, out float width)
+{
+    float2 pos = float2(wx,wy);
+    float weight = 0.0f;
+    float width = 0.0f;
+    float num = 0f;
+    float num2 = 0f;
+
+    [unroll]
+    for(uint i = 0; i<length; i++)
+    //foreach (WorldGenerator.RiverPoint riverPoint in points)
+    {
+        RiverPoint riverPoint = riverPointList[i+startIndex];
+        //float num3 = Vector2.SqrMagnitude(riverPoint.p - b);
+        float num3 = sqrt(length(riverPoint.position - pos));
+        
+        [branch]
+        if (num3 < pow(riverPoint.weight,2))
+        {
+            float num4 = sqrt(num3);
+            float num5 = 1f - num4 / riverPoint.weight;
+            if (num5 > weight)
+            {
+                weight = num5;
+            }
+            num += riverPoint.weight * num5;
+            num2 += num5;
+        }
+    }
+
+    [branch]
+    if (num2 > 0.0f)
+    {
+        width = num / num2;
+    }
+}
+
+void GetRiverWeight(float wx, float wy, out float weight, out float width)
+{
+    float weight = 0.0f;
+    float width = 0.0f;
+
+    uint2 riverGrid = GetRiverGrid(wx, wy);
+    River river = riverList[riverGrid.x*160+riverGrid.y];
+    GetWeight(river.startIndex, river.length, wx, wy, out weight, out width)
+}
+
+float AddRivers(float wx, float wy, float h)
+{
+    float num = 0.0f;
+    float v = 0.0f;
+    GetRiverWeight(wx, wy, out num, out v);
+
+    [branch]
+    if (num <= 0.0f)
+    {
+        return h;
+    }
+    
+    float t = LerpStep(20.0f, 60.0f, v);
+    float num2 = lerp(0.14f, 0.12f, t);
+    float num3 = lerp(0.139f, 0.128f, t);
+    
+    [branch]
+    if (h > num2)
+    {
+        h = lerp(h, num2, num);
+    }
+
+    [branch]
+    if (h > num3)
+    {
+        float t2 = LerpStep(0.85f, 1f, num);
+        h = lerp(h, num3, t2);
+    }
+    return h;
+}
+
 float GetBaseHeight(float wx, float wy)
 {
     float num2 = Length(wx, wy);
@@ -57,31 +159,6 @@ float BaseHeightTilt(float wx, float wy)
     float baseHeight3 = GetBaseHeight(wx, wy - 1.0f);
     float baseHeight4 = GetBaseHeight(wx, wy + 1.0f);
     return abs(baseHeight2 - baseHeight) + abs(baseHeight3 - baseHeight4);
-}
-
-float AddRivers(float wx, float wy, float h)
-{
-    // float num;
-    // float v;
-    // GetRiverWeight(wx, wy, out num, out v);
-    // if (num <= 0f)
-    // {
-    //     return h;
-    // }
-    // float t = Utils.LerpStep(20f, 60f, v);
-    // float num2 = Mathf.Lerp(0.14f, 0.12f, t);
-    // float num3 = Mathf.Lerp(0.139f, 0.128f, t);
-    // if (h > num2)
-    // {
-    //     h = Mathf.Lerp(h, num2, num);
-    // }
-    // if (h > num3)
-    // {
-    //     float t2 = Utils.LerpStep(0.85f, 1f, num);
-    //     h = Mathf.Lerp(h, num3, t2);
-    // }
-    // return h;
-    return h;
 }
 
 float GetMarshHeight(float wx, float wy)
