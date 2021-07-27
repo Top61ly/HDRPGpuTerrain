@@ -8,6 +8,7 @@ AppendStructuredBuffer<uint2> appendNodeList;   // first A
 ConsumeStructuredBuffer<uint2> consumeNodeList; // first B
 AppendStructuredBuffer<uint3> finalNodeList;    // result
 
+//QuadTreeBuild
 uniform float4 _worldParams;
 uniform uint _curLodLevel;
 

@@ -101,9 +101,9 @@ class GpuTerrainPass : CustomPass
         m_InitTerrainPositionBuffer.SetData(instances); 
 
         //Init NodeList Buffer
-        m_TempNodeListA = new ComputeBuffer(25, 8, ComputeBufferType.Append);
-        m_TempNodeListB = new ComputeBuffer(25, 8, ComputeBufferType.Append);
-        m_FinalNodeList = new ComputeBuffer(25, 12, ComputeBufferType.Append);
+        m_TempNodeListA = new ComputeBuffer(100, 8, ComputeBufferType.Append);
+        m_TempNodeListB = new ComputeBuffer(100, 8, ComputeBufferType.Append);
+        m_FinalNodeList = new ComputeBuffer(100, 12, ComputeBufferType.Append);
         
         //Init Indirect Draw Args 
         m_IndirectArgsBuffer = new ComputeBuffer(5,sizeof(uint), ComputeBufferType.IndirectArguments);
