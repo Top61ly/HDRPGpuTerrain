@@ -77,6 +77,9 @@ class GpuTerrainPass : CustomPass
 
     private uint[] args = new uint[5] { 0, 0, 0, 0, 0};
 
+    private const int k_MaxNodeCount = 200;
+    private const int k_MaxTempNodeCount = 50;
+
     protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
     {
         //1 Compute Shader Kernel Init
@@ -101,9 +104,9 @@ class GpuTerrainPass : CustomPass
         m_InitTerrainPositionBuffer.SetData(instances); 
 
         //Init NodeList Buffer
-        m_TempNodeListA = new ComputeBuffer(100, 8, ComputeBufferType.Append);
-        m_TempNodeListB = new ComputeBuffer(100, 8, ComputeBufferType.Append);
-        m_FinalNodeList = new ComputeBuffer(100, 12, ComputeBufferType.Append);
+        m_TempNodeListA = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
+        m_TempNodeListB = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
+        m_FinalNodeList = new ComputeBuffer(k_MaxNodeCount, 12, ComputeBufferType.Append);
         
         //Init Indirect Draw Args 
         m_IndirectArgsBuffer = new ComputeBuffer(5,sizeof(uint), ComputeBufferType.IndirectArguments);
@@ -116,9 +119,6 @@ class GpuTerrainPass : CustomPass
         //Init Dispatch Indirect Args
         m_DispatchIndirectArgsBuffer = new ComputeBuffer(3,4,ComputeBufferType.IndirectArguments);
         m_DispatchIndirectArgsBuffer.SetData(new uint[]{1,1,1});
-
-        //Set Material Buffer
-        //m_IndirectMaterial.SetBuffer("finalNodeList", m_InitTerrainPositionBuffer);
     }
 
     protected override void Execute(CustomPassContext ctx)
