@@ -138,4 +138,18 @@ float4x4 ToMatrix(TerrainInstanceData data)
     return mat;
 }
 
+float4x4 Uint2ToMatrix(uint3 node)
+{
+    float4x4 mat;
+    float scale = pow(2,node.z);
+    float nodeCount = 5.0f*pow(2,5-node.z);
+    float2 pos = ((float2)node+0.5f-nodeCount/2)*64.0f*scale;
+    float3 position = float3(pos.x,0,pos.y);
+    mat._11_21_31_41 = float4(scale,0.0,0.0,0.0);
+    mat._12_22_32_42 = float4(0.0,scale,0.0,0.0);
+    mat._13_23_33_43 = float4(0.0,0.0,scale,0.0);
+    mat._14_24_34_44 = float4(position, 1.0);
+    return mat;
+}
+
 #endif

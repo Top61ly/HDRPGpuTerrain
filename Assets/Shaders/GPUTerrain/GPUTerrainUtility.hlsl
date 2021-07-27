@@ -18,7 +18,7 @@ float3 GetNodeWorldPosition(uint2 node, uint curLodLevel)
 {
     float nodeSize = GetNodeSize(curLodLevel);
     float nodeCount = GetNodeCount(curLodLevel);
-    float2 nodePositionWS = ((float2)node+0.5-nodeCount/2)*nodeSize;
+    float2 nodePositionWS = ((float2)node+0.5f-nodeCount/2)*nodeSize;
     //TODO: Add y to NodeWorldPosition
     return float3(nodePositionWS.x,0,nodePositionWS.y);
 }

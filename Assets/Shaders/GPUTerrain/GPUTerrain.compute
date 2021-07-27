@@ -4,21 +4,28 @@
 
 #include "./GPUTerrainUtility.hlsl"
 
-AppendStructuredBuffer<uint2> appendNodeList;
-ConsumeStructuredBuffer<uint2> consumeNodeList;
-AppendStructuredBuffer<uint3> finalNodeList;
+AppendStructuredBuffer<uint2> appendNodeList;   // first A
+ConsumeStructuredBuffer<uint2> consumeNodeList; // first B
+AppendStructuredBuffer<uint3> finalNodeList;    // result
 
 uniform float4 _worldParams;
 uniform uint _curLodLevel;
+
 uniform float3 _cameraPos;
+uniform float4 _cameraFrustumPlanes[6];
+
+uniform float4 _nodeEvaluationC;
 
 bool CalcuteSubdivide(uint2 node)
 {
     float3 nodePositionWS = GetNodeWorldPosition(node, _curLodLevel);
     //TODO: Currently we move camerapos to xz plane
     float3 cameraPos = float3(_cameraPos.x,0,_cameraPos.z);
-    float dist = distance(_cameraPos, nodePositionWS);
-
+    float dist = distance(cameraPos, nodePositionWS);
+    float nodeSize = GetNodeSize(_curLodLevel);
+    float f = dist / (nodeSize * _nodeEvaluationC.x);
+    if( f < 1.0f )
+        return true;
     return false;
 }
 
@@ -26,6 +33,19 @@ bool CalcuteSubdivide(uint2 node)
 void TerrainNodeBuild (uint3 id : SV_DispatchThreadID)
 {
     uint2 curNode = consumeNodeList.Consume();
+    
+    [branch]
+    if(_curLodLevel > 0 && CalcuteSubdivide(curNode))
+    {
+        appendNodeList.Append(curNode * 2);
+        appendNodeList.Append(curNode * 2 + uint2(1,0));
+        appendNodeList.Append(curNode * 2 + uint2(0,1));
+        appendNodeList.Append(curNode * 2 + uint2(1,1));
+    }
+    else
+    {
+        finalNodeList.Append(uint3(curNode, _curLodLevel));
+    }
 }
 
 [numthreads(1,1,1)]
