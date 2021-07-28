@@ -22,18 +22,19 @@ struct TerrainInstanceData
 [Serializable]
 class TerrainParams
 {
+    public int terrainPatchSize = 8;
     public int maxLod = 5;
     public int terrianTileCount = 5;
     public float terrianWidth = 10240.0f;
+    public readonly int k_MaxNodeCount = 34125;
 }
 
 class GpuTerrainPass : CustomPass
 {
     public TerrainParams terrainParams = new TerrainParams();
 
-    [SerializeField] private Mesh m_TerrainMesh;
+    private Mesh m_TerrainMesh;
     [SerializeField] private Material m_IndirectMaterial;
-
     [SerializeField] private ComputeShader m_TerrainBuildComputeShader;
     
     const string s_TerrainNodeBuildKernelName = "TerrainNodeBuild";
@@ -43,7 +44,6 @@ class GpuTerrainPass : CustomPass
     int m_NodeBuildKernelID = -1;
     int m_LODMapKernelID = -1;
     int m_VisibleRenderKernelID = -1;
-    int m_CopyAppendConsumeBufferKernelID = -1;
 
     private class ShaderParms
     {
@@ -54,9 +54,11 @@ class GpuTerrainPass : CustomPass
         public static readonly int r_NodeEvaluationC = Shader.PropertyToID("_nodeEvaluationC");
         public static readonly int r_AppendNodeList = Shader.PropertyToID("appendNodeList");
         public static readonly int r_ConsumeNodeList = Shader.PropertyToID("consumeNodeList");
+        public static readonly int r_AppendFinalNodeList = Shader.PropertyToID("appendFinalNodeList");
         public static readonly int r_FinalNodeList = Shader.PropertyToID("finalNodeList");
         public static readonly int r_LodMap = Shader.PropertyToID("_lodMap");
         public static readonly int r_NodeDescriptors = Shader.PropertyToID("nodeDescriptors");
+        public static readonly int r_CulledPatchList = Shader.PropertyToID("culledPatchList");
     }
 
     Camera m_Camera;
@@ -66,22 +68,31 @@ class GpuTerrainPass : CustomPass
 
     private int m_ShaderPassID = -1;
 
-    private ComputeBuffer m_InitTerrainPositionBuffer;
+    //Node Descriptors
+    private ComputeBuffer m_NodeDescriptors;
 
+    //QuadTree Buffer
+    private ComputeBuffer m_InitTerrainPositionBuffer;
     private ComputeBuffer m_TempNodeListA;
     private ComputeBuffer m_TempNodeListB;
     private ComputeBuffer m_FinalNodeList;
 
+    //Cull Result
+    private ComputeBuffer m_CulledPatchList;
+
     private ComputeBuffer m_IndirectArgsBuffer;
     private ComputeBuffer m_DispatchIndirectArgsBuffer;
 
-    private uint[] args = new uint[5] { 0, 0, 0, 0, 0};
+    private uint[] args = new uint[5]{0, 0, 0, 0, 0};
 
     private const int k_MaxNodeCount = 200;
     private const int k_MaxTempNodeCount = 50;
 
     protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
     {
+        //Mesh Init
+        m_TerrainMesh = MeshUtility.CreatePlaneMesh(terrainParams.terrainPatchSize);
+
         //1 Compute Shader Kernel Init
         //1.1   Terrain Build
         m_NodeBuildKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainNodeBuildKernelName);
@@ -104,10 +115,12 @@ class GpuTerrainPass : CustomPass
         m_InitTerrainPositionBuffer.SetData(instances); 
 
         //Init NodeList Buffer
+        m_NodeDescriptors = new ComputeBuffer(terrainParams.k_MaxNodeCount, 4);
         m_TempNodeListA = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
         m_TempNodeListB = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
         m_FinalNodeList = new ComputeBuffer(k_MaxNodeCount, 12, ComputeBufferType.Append);
-        
+        m_CulledPatchList = new ComputeBuffer(k_MaxNodeCount * 64, 12, ComputeBufferType.Append);
+
         //Init Indirect Draw Args 
         m_IndirectArgsBuffer = new ComputeBuffer(5,sizeof(uint), ComputeBufferType.IndirectArguments);
         args[0] = (uint)m_TerrainMesh.GetIndexCount(0);
@@ -119,6 +132,23 @@ class GpuTerrainPass : CustomPass
         //Init Dispatch Indirect Args
         m_DispatchIndirectArgsBuffer = new ComputeBuffer(3,4,ComputeBufferType.IndirectArguments);
         m_DispatchIndirectArgsBuffer.SetData(new uint[]{1,1,1});
+
+        //Material params bind
+        m_IndirectMaterial.SetBuffer("renderPatchList", m_CulledPatchList);
+
+        //ComputeShader params bind
+        m_TerrainBuildComputeShader.SetVector(ShaderParms.r_NodeEvaluationC, m_NodeEvaluationC);
+        
+        //ComputeShader NodeBuildKernel Buffer Bind
+        m_TerrainBuildComputeShader.SetBuffer(m_NodeBuildKernelID, ShaderParms.r_AppendFinalNodeList, m_FinalNodeList);
+
+        //ComputeShader LodMap Buffer Bind
+        
+
+        //COmputeShader VisibleRender Buffer Bind
+        m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_FinalNodeList, m_FinalNodeList);
+        m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_CulledPatchList, m_CulledPatchList);
+
     }
 
     protected override void Execute(CustomPassContext ctx)
@@ -132,13 +162,9 @@ class GpuTerrainPass : CustomPass
         ctx.cmd.SetComputeVectorParam(m_TerrainBuildComputeShader, ShaderParms.r_CameraPositionWS, m_Camera.transform.position);
         ctx.cmd.SetComputeVectorArrayParam(m_TerrainBuildComputeShader, ShaderParms.r_CameraFrustumPlanes, m_CameraFrustumPlanesV4);
 
-        ctx.cmd.SetComputeVectorParam(m_TerrainBuildComputeShader, ShaderParms.r_NodeEvaluationC, m_NodeEvaluationC);
-
         ctx.cmd.CopyCounterValue(m_InitTerrainPositionBuffer, m_DispatchIndirectArgsBuffer, 0);
         
         //Stage 1 : Traverse All Node add to finalNodeList
-        ctx.cmd.SetComputeBufferParam(m_TerrainBuildComputeShader, m_NodeBuildKernelID, ShaderParms.r_FinalNodeList, m_FinalNodeList);
-
         ComputeBuffer consumeNodeList = m_TempNodeListA;
         ComputeBuffer appendNodeList = m_TempNodeListB;
         for(int lod = terrainParams.maxLod; lod >= 0; lod--)
@@ -161,10 +187,15 @@ class GpuTerrainPass : CustomPass
             appendNodeList = temp;
         }
 
-        ctx.cmd.CopyCounterValue(m_FinalNodeList, m_IndirectArgsBuffer, 4);
+        //Stage 2 : Generate LodMap
 
-        m_IndirectMaterial.SetBuffer("finalNodeList", m_FinalNodeList);
+        //Stage 3 : Generate RenderPatchList
+        ctx.cmd.CopyCounterValue(m_FinalNodeList, m_DispatchIndirectArgsBuffer, 0);
 
+        ctx.cmd.DispatchCompute(m_TerrainBuildComputeShader, m_VisibleRenderKernelID, m_DispatchIndirectArgsBuffer, 0);
+
+        //Draw!!!!!!!!
+        ctx.cmd.CopyCounterValue(m_CulledPatchList, m_IndirectArgsBuffer, 4);
         ctx.cmd.DrawMeshInstancedIndirect(m_TerrainMesh,0,m_IndirectMaterial,m_ShaderPassID,m_IndirectArgsBuffer);
     }
 
@@ -202,9 +233,9 @@ class GpuTerrainPass : CustomPass
 
     private void ClearBufferCounter(CommandBuffer cmd)
     {
-        cmd.SetComputeBufferCounterValue(m_InitTerrainPositionBuffer, (uint)m_InitTerrainPositionBuffer.count);
-        cmd.SetComputeBufferCounterValue(m_TempNodeListA, 0);
-        cmd.SetComputeBufferCounterValue(m_TempNodeListB, 0);
-        cmd.SetComputeBufferCounterValue(m_FinalNodeList, 0);
+        cmd.SetBufferCounterValue(m_InitTerrainPositionBuffer, (uint)m_InitTerrainPositionBuffer.count);
+        cmd.SetBufferCounterValue(m_TempNodeListA, 0);
+        cmd.SetBufferCounterValue(m_TempNodeListB, 0);
+        cmd.SetBufferCounterValue(m_FinalNodeList, 0);
     }
 }

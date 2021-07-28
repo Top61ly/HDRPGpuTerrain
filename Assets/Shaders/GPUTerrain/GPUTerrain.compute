@@ -6,7 +6,7 @@
 
 AppendStructuredBuffer<uint2> appendNodeList;   // first A
 ConsumeStructuredBuffer<uint2> consumeNodeList; // first B
-AppendStructuredBuffer<uint3> finalNodeList;    // result
+AppendStructuredBuffer<uint3> appendFinalNodeList;    // result
 
 //QuadTreeBuild
 uniform float4 _worldParams;
@@ -16,6 +16,12 @@ uniform float3 _cameraPos;
 uniform float4 _cameraFrustumPlanes[6];
 
 uniform float4 _nodeEvaluationC;
+
+//Lod Map
+
+//RenderPatchList
+StructuredBuffer<uint3> finalNodeList;
+AppendStructuredBuffer<RenderPatch> culledPatchList;
 
 bool CalcuteSubdivide(uint2 node)
 {
@@ -46,18 +52,46 @@ void TerrainNodeBuild (uint3 id : SV_DispatchThreadID)
     }
     else
     {
-        finalNodeList.Append(uint3(curNode, _curLodLevel));
+        appendFinalNodeList.Append(uint3(curNode, _curLodLevel));
     }
 }
 
 [numthreads(1,1,1)]
-void TerrainLODMap (uint3 id : SV_DISPATCHTHREADID)
+void TerrainLODMap (uint3 id : SV_DispatchThreadID)
 {
 
 }
 
-[numthreads(1,1,1)]
-void TerrainVisibleRender (uint3 id : SV_DISPATCHTHREADID)
+bool Cull(Bound bound)
+{
+    return false;
+}
+
+RenderPatch CreatePatch(uint3 node, uint2 patchId)
 {
 
+}
+
+Bound CreateBound(uint3 node, uint2 patch)
+{
+
+}
+
+[numthreads(8,8,1)]
+void TerrainVisibleRender (uint3 id : SV_DispatchThreadID, uint3 groupId:SV_GroupID, uint3 groupThreadId:SV_GroupThreadID)
+{
+    // // uint3 node = finalNodeList[groupId];
+    // // uint2 patchId = groupThreadId.xy;
+
+    // // //Build RenderPatch
+    // // RenderPathch patch = CreatePatch(node, patchId);
+
+    // // //Build Bound do Culling
+    // // //Bound bound = CreateBound(patch);
+    // // Bound bound = CreateBound(node, patchId);
+
+    // // if(Cull(bound))
+    // //     return;
+    
+    // culledPatchList.Append()
 }
