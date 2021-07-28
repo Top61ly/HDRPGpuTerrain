@@ -23,6 +23,7 @@ bool CalcuteSubdivide(uint2 node)
     //TODO: Currently we move camerapos to xz plane
     float3 cameraPos = float3(_cameraPos.x,0,_cameraPos.z);
     float dist = distance(cameraPos, nodePositionWS);
+    //float dist = max(abs(cameraPos.x-nodePositionWS.x),abs(cameraPos.z-nodePositionWS.z));
     float nodeSize = GetNodeSize(_curLodLevel);
     float f = dist / (nodeSize * _nodeEvaluationC.x);
     if( f < 1.0f )
