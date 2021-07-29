@@ -1,8 +1,7 @@
 #ifndef __DATA_TYPE__
 #define __DATA_TYPE__
 
-
-#include "Utility.hlsl"
+#include "./GPUTerrain/Utility.hlsl"
 
 
 #ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED

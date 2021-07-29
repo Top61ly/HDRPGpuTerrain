@@ -461,7 +461,7 @@ Shader "HDRP/IndirectTerrainLit"
 
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassGBuffer.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -500,7 +500,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassLightTransport.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -539,7 +539,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
             
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -596,7 +596,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -649,7 +649,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassMotionVectors.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -705,7 +705,7 @@ Shader "HDRP/IndirectTerrainLit"
             #pragma vertex Vert
             #pragma fragment Frag
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             ENDHLSL
@@ -772,7 +772,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForward.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert
@@ -855,7 +855,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForward.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             #pragma vertex Vert
             #pragma fragment Frag
@@ -889,7 +889,7 @@ Shader "HDRP/IndirectTerrainLit"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitData.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 
-            #include "Assets/Shaders/SetupTerrainProcedual.hlsl"  
+           #include "./SetupTerrainProcedual.hlsl"  
 			#pragma instancing_options procedural:setupTerrainProcedual
             
             #pragma vertex Vert

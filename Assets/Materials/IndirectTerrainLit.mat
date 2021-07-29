@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: IndirectTerrainLit
-  m_Shader: {fileID: 4800000, guid: c58a04eadf80f2943ba55d2ab00d670b, type: 3}
+  m_Shader: {fileID: 4800000, guid: 694919ff67de1cd40a30400d429f45f9, type: 3}
   m_ShaderKeywords: _DISABLE_SSR _DISABLE_SSR_TRANSPARENT _NORMALMAP_TANGENT_SPACE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -116,6 +116,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _AORemapMax: 1
     - _AORemapMin: 0

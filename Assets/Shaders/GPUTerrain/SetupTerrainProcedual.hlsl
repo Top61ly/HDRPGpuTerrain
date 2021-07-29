@@ -4,10 +4,9 @@
 
 #include "Utility.hlsl"
 
-
 #ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
 uniform StructuredBuffer<TerrainInstanceData> instances;
-uniform StructuredBuffer<uint3> renderPatchList;
+uniform StructuredBuffer<RenderPatch> renderPatchList;
 
 inline float4x4 UpdateInstanceData(float4x4 unity_ObjectToWorld)
 {
@@ -39,7 +38,7 @@ void setupTerrainProcedual()
 #ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
     #define unity_ObjectToWorld unity_ObjectToWorld
     #define unity_WorldToObject unity_WorldToObject
-    unity_ObjectToWorld = Uint2ToMatrix(renderPatchList[unity_InstanceID]);
+    unity_ObjectToWorld = RenderPatchToMatrix(renderPatchList[unity_InstanceID]);
 	unity_WorldToObject = UpdateInstanceData(unity_ObjectToWorld);
 #endif // UNITY_PROCEDURAL_INSTANCING_ENABLED
 }

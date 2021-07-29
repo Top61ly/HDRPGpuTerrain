@@ -33,7 +33,7 @@ class GpuTerrainPass : CustomPass
 {
     public TerrainParams terrainParams = new TerrainParams();
 
-    private Mesh m_TerrainMesh;
+    [SerializeField] private Mesh m_TerrainMesh;
     [SerializeField] private Material m_IndirectMaterial;
     [SerializeField] private ComputeShader m_TerrainBuildComputeShader;
     
@@ -48,7 +48,7 @@ class GpuTerrainPass : CustomPass
     private class ShaderParms
     {
         public static readonly int r_CameraPositionWS = Shader.PropertyToID("_cameraPos");
-        public static readonly int r_CameraFrustumPlanes = Shader.PropertyToID("_cameraFrustumPlandes");
+        public static readonly int r_CameraFrustumPlanes = Shader.PropertyToID("_cameraFrustumPlanes");
         public static readonly int r_WorldParams = Shader.PropertyToID("_worldParams");
         public static readonly int r_CurLodLevelt = Shader.PropertyToID("_curLodLevel");
         public static readonly int r_NodeEvaluationC = Shader.PropertyToID("_nodeEvaluationC");
@@ -91,7 +91,7 @@ class GpuTerrainPass : CustomPass
     protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
     {
         //Mesh Init
-        m_TerrainMesh = MeshUtility.CreatePlaneMesh(terrainParams.terrainPatchSize);
+        //m_TerrainMesh = MeshUtility.CreatePlaneMesh(terrainParams.terrainPatchSize);
 
         //1 Compute Shader Kernel Init
         //1.1   Terrain Build
@@ -148,7 +148,6 @@ class GpuTerrainPass : CustomPass
         //COmputeShader VisibleRender Buffer Bind
         m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_FinalNodeList, m_FinalNodeList);
         m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_CulledPatchList, m_CulledPatchList);
-
     }
 
     protected override void Execute(CustomPassContext ctx)
@@ -216,6 +215,9 @@ class GpuTerrainPass : CustomPass
         if(m_FinalNodeList != null)
             m_FinalNodeList.Release();
         
+        if(m_CulledPatchList != null)
+            m_CulledPatchList.Release();
+
         if(m_DispatchIndirectArgsBuffer != null)
             m_DispatchIndirectArgsBuffer.Release();        
     }    
@@ -237,5 +239,6 @@ class GpuTerrainPass : CustomPass
         cmd.SetBufferCounterValue(m_TempNodeListA, 0);
         cmd.SetBufferCounterValue(m_TempNodeListB, 0);
         cmd.SetBufferCounterValue(m_FinalNodeList, 0);
+        cmd.SetBufferCounterValue(m_CulledPatchList, 0);
     }
 }

@@ -2,7 +2,12 @@
 #pragma kernel TerrainLODMap
 #pragma kernel TerrainVisibleRender
 
-#include "./GPUTerrainUtility.hlsl"
+#define GRIDSIZE 64
+#define TERRAIN_WIDTH 10240
+#define MAXTERRAINLOD 5 //Highest Res: 0  Lowest Res: 5
+#define TOTALTERRAINTILES 34125 //5x5 10x10 20x20 40x40 80x80 160x160
+
+#include "./InputStruct.hlsl"
 
 AppendStructuredBuffer<uint2> appendNodeList;   // first A
 ConsumeStructuredBuffer<uint2> consumeNodeList; // first B
@@ -23,6 +28,37 @@ uniform float4 _nodeEvaluationC;
 StructuredBuffer<uint3> finalNodeList;
 AppendStructuredBuffer<RenderPatch> culledPatchList;
 
+float GetNodeSize(uint curLodLevel)
+{
+    return (float)GRIDSIZE*pow(2,curLodLevel);
+}
+
+float GetNodeCount(uint curLodLevel)
+{
+    uint highestCount = TERRAIN_WIDTH/GRIDSIZE;
+    return (float)highestCount/pow(2,curLodLevel);
+}
+
+float3 GetNodeWorldPosition(uint2 node, uint curLodLevel)
+{
+    float nodeSize = GetNodeSize(curLodLevel);
+    float nodeCount = GetNodeCount(curLodLevel);
+    float2 nodePositionWS = ((float2)node+0.5f-nodeCount/2)*nodeSize;
+    //TODO: Add y to NodeWorldPosition
+    return float3(nodePositionWS.x,0,nodePositionWS.y);
+}
+
+float GetRenderPatchSize(uint lod)
+{
+    return (float)GRIDSIZE*pow(2,lod)/8;
+}
+
+float3 GetRenderPatchPosition(uint2 patchId, uint lod)
+{
+    float patchSize = GetRenderPatchSize(lod);
+    float2 patchPos = ((float2)patchId+0.5f-4.0f) * patchSize;
+    return float3(patchPos.x, 0.0f, patchPos.y);
+}
 bool CalcuteSubdivide(uint2 node)
 {
     float3 nodePositionWS = GetNodeWorldPosition(node, _curLodLevel);
@@ -62,36 +98,76 @@ void TerrainLODMap (uint3 id : SV_DispatchThreadID)
 
 }
 
+bool IsOutSidePlane(float4 plane, float3 position)
+{
+    return dot(plane.xyz, position) + plane.w < 0;
+}
+
+bool IsOutSideAllPlanes(float3 position)
+{
+    [unroll]
+    for(int i=0; i<6; i++)
+    {
+        if(IsOutSidePlane(_cameraFrustumPlanes[i], position))
+            return true;
+    }
+    return false;
+}
+
+bool FrustumCull(Bound bound)
+{
+    return IsOutSideAllPlanes(bound.minPosition) &&
+        IsOutSideAllPlanes(bound.maxPosition) &&
+        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.minPosition.y, bound.maxPosition.z)) &&
+        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
+        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.maxPosition.y, bound.maxPosition.z)) &&
+        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
+        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.minPosition.y, bound.minPosition.z)) &&
+        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.minPosition.y, bound.maxPosition.z));
+}
+
 bool Cull(Bound bound)
 {
+    if(FrustumCull(bound))
+        return true;
+
     return false;
 }
 
 RenderPatch CreatePatch(uint3 node, uint2 patchId)
 {
-
+    RenderPatch patch;
+    float3 nodePosition = GetNodeWorldPosition(node.xy, node.z);
+    float3 patchOPos = GetRenderPatchPosition(patchId, node.z);
+    patch.position = patchOPos.xz + nodePosition.xz;
+    patch.lod = node.z;
+    return patch;
 }
 
-Bound CreateBound(uint3 node, uint2 patch)
+Bound CreateBound(RenderPatch patch)
 {
-
+    Bound bound;
+    float2 nodePos = patch.position;
+    float patchSize = GetRenderPatchSize(patch.lod);
+    bound.minPosition = float3(nodePos.x-patchSize/2, 0.0f, nodePos.y-patchSize/2);
+    bound.maxPosition = float3(nodePos.x+patchSize/2, 0.0f, nodePos.y+patchSize/2);
+    return bound;
 }
 
 [numthreads(8,8,1)]
 void TerrainVisibleRender (uint3 id : SV_DispatchThreadID, uint3 groupId:SV_GroupID, uint3 groupThreadId:SV_GroupThreadID)
 {
-    // // uint3 node = finalNodeList[groupId];
-    // // uint2 patchId = groupThreadId.xy;
+    uint3 node = finalNodeList[groupId.x];
+    uint2 patchId = groupThreadId.xy;
 
-    // // //Build RenderPatch
-    // // RenderPathch patch = CreatePatch(node, patchId);
+    //Build RenderPatch
+    RenderPatch patch = CreatePatch(node, patchId);
 
-    // // //Build Bound do Culling
-    // // //Bound bound = CreateBound(patch);
-    // // Bound bound = CreateBound(node, patchId);
+    //Build Bound do Culling
+    Bound bound = CreateBound(patch);
 
-    // // if(Cull(bound))
-    // //     return;
+    if(Cull(bound))
+        return;
     
-    // culledPatchList.Append()
+    culledPatchList.Append(patch);
 }
