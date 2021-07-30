@@ -350,6 +350,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1025778954}
   - component: {fileID: 1025778953}
+  - component: {fileID: 1025778955}
   m_Layer: 0
   m_Name: GpuTerrainCustomPass
   m_TagString: Untagged
@@ -374,7 +375,7 @@ MonoBehaviour:
   priority: 0
   customPasses:
   - rid: 0
-  injectionPoint: 4
+  injectionPoint: 0
   references:
     version: 2
     RefIds:
@@ -383,8 +384,8 @@ MonoBehaviour:
       data:
         m_Name: GpuTerrain
         enabled: 1
-        targetColorBuffer: 0
-        targetDepthBuffer: 0
+        targetColorBuffer: 2
+        targetDepthBuffer: 2
         clearFlags: 0
         passFoldout: 0
         m_Version: 0
@@ -393,6 +394,7 @@ MonoBehaviour:
           maxLod: 5
           terrianTileCount: 5
           terrianWidth: 10240
+        m_TerrainMesh: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
         m_IndirectMaterial: {fileID: 2100000, guid: b921b341a1143bf4fb0b799e6179ea9e, type: 2}
         m_TerrainBuildComputeShader: {fileID: 7200000, guid: 9755dea094fe96d46b98f0e696006178, type: 3}
 --- !u!4 &1025778954
@@ -403,13 +405,27 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1025778952}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1236, y: 0, z: -395}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1025778955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025778952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9e2b13289aeac24e838304867536c6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainPatch: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
+  instanceMaterial: {fileID: 2100000, guid: b921b341a1143bf4fb0b799e6179ea9e, type: 2}
 --- !u!1 &1630005027
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,7 +504,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1630005027}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

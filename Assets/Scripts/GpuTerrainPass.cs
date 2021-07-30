@@ -122,12 +122,7 @@ class GpuTerrainPass : CustomPass
         m_CulledPatchList = new ComputeBuffer(k_MaxNodeCount * 64, 12, ComputeBufferType.Append);
 
         //Init Indirect Draw Args 
-        m_IndirectArgsBuffer = new ComputeBuffer(5,sizeof(uint), ComputeBufferType.IndirectArguments);
-        args[0] = (uint)m_TerrainMesh.GetIndexCount(0);
-        args[1] = (uint)0;
-        args[2] = (uint)m_TerrainMesh.GetIndexStart(0);
-        args[3] = (uint)m_TerrainMesh.GetBaseVertex(0);
-        m_IndirectArgsBuffer.SetData(args);
+        m_IndirectArgsBuffer = GpuTerrainRender.m_IndirectArgs;
 
         //Init Dispatch Indirect Args
         m_DispatchIndirectArgsBuffer = new ComputeBuffer(3,4,ComputeBufferType.IndirectArguments);
@@ -195,7 +190,8 @@ class GpuTerrainPass : CustomPass
 
         //Draw!!!!!!!!
         ctx.cmd.CopyCounterValue(m_CulledPatchList, m_IndirectArgsBuffer, 4);
-        ctx.cmd.DrawMeshInstancedIndirect(m_TerrainMesh,0,m_IndirectMaterial,m_ShaderPassID,m_IndirectArgsBuffer);
+        //ctx.cmd.DrawMeshInstancedIndirect(m_TerrainMesh,0,m_IndirectMaterial,m_ShaderPassID,m_IndirectArgsBuffer);
+        //Graphics.DrawMeshInstancedIndirect(m_TerrainMesh, 0, m_IndirectMaterial, new Bounds(Vector3.zero, Vector3.one * 10240), m_IndirectArgsBuffer);
     }
 
     protected override void Cleanup()
@@ -203,6 +199,9 @@ class GpuTerrainPass : CustomPass
         if(m_IndirectArgsBuffer != null)
             m_IndirectArgsBuffer.Release();
         
+        if(m_NodeDescriptors != null)
+            m_NodeDescriptors.Release();
+
         if(m_InitTerrainPositionBuffer != null)
             m_InitTerrainPositionBuffer.Release();
 
