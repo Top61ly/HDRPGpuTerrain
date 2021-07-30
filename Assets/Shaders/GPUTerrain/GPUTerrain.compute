@@ -149,8 +149,8 @@ Bound CreateBound(RenderPatch patch)
     Bound bound;
     float2 nodePos = patch.position;
     float patchSize = GetRenderPatchSize(patch.lod);
-    bound.minPosition = float3(nodePos.x-patchSize/2, 0.0f, nodePos.y-patchSize/2);
-    bound.maxPosition = float3(nodePos.x+patchSize/2, 0.0f, nodePos.y+patchSize/2);
+    bound.minPosition = float3(nodePos.x-patchSize/2, _cameraPos.y, nodePos.y-patchSize/2);
+    bound.maxPosition = float3(nodePos.x+patchSize/2, _cameraPos.y, nodePos.y+patchSize/2);
     return bound;
 }
 
