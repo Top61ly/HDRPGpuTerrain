@@ -4,7 +4,7 @@ struct RenderPatch
     //float2 minMaxHeight;
     uint lod;
     //uint4 lodTrans;
-    //float3 heights[289];
+    //float heights[256];
 };
 
 struct Bound
