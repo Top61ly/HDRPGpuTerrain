@@ -66,8 +66,6 @@ class GpuTerrainPass : CustomPass
     Vector4[] m_CameraFrustumPlanesV4 = new Vector4[6];
     Vector4 m_NodeEvaluationC = new Vector4(0.9f,0,0,0);
 
-    private int m_ShaderPassID = -1;
-
     //Node Descriptors
     private ComputeBuffer m_NodeDescriptors;
 
@@ -98,9 +96,7 @@ class GpuTerrainPass : CustomPass
         m_NodeBuildKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainNodeBuildKernelName);
         m_LODMapKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainLodMapKernelName);
         m_VisibleRenderKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainVisibleRenderKernelName);
-               
-        m_ShaderPassID = m_IndirectMaterial.FindPass("GBuffer");
-        
+                       
         //Init Terrain Node List
         var index = 0;
         uint2[] instances = new uint2[25];

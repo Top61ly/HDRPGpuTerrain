@@ -6,6 +6,7 @@ public class GpuTerrainRender : MonoBehaviour
 {
     public Mesh terrainPatch;
     public Material instanceMaterial;
+    public Texture perlinTexture;
     public static ComputeBuffer m_IndirectArgs;
 
     private uint[] args = new uint[5]{0,0,0,0,0};
@@ -18,6 +19,8 @@ public class GpuTerrainRender : MonoBehaviour
         args[2] = (uint)terrainPatch.GetIndexStart(0);
         args[3] = (uint)terrainPatch.GetBaseVertex(0);
         m_IndirectArgs.SetData(args);
+
+        instanceMaterial.SetTexture("_PerlinTex", perlinTexture);
     }
 
     private void Update() 

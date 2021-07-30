@@ -374,12 +374,12 @@ MonoBehaviour:
   fadeRadius: 0
   priority: 0
   customPasses:
-  - rid: 0
+  - rid: 6512010036630519808
   injectionPoint: 0
   references:
     version: 2
     RefIds:
-    - rid: 0
+    - rid: 6512010036630519808
       type: {class: GpuTerrainPass, ns: , asm: Assembly-CSharp}
       data:
         m_Name: GpuTerrain
@@ -395,7 +395,7 @@ MonoBehaviour:
           terrianTileCount: 5
           terrianWidth: 10240
         m_TerrainMesh: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
-        m_IndirectMaterial: {fileID: 2100000, guid: b921b341a1143bf4fb0b799e6179ea9e, type: 2}
+        m_IndirectMaterial: {fileID: 2100000, guid: fd1a4ac1e7aba064ea191ccbb10eb5e2, type: 2}
         m_TerrainBuildComputeShader: {fileID: 7200000, guid: 9755dea094fe96d46b98f0e696006178, type: 3}
 --- !u!4 &1025778954
 Transform:
@@ -425,7 +425,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrainPatch: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
-  instanceMaterial: {fileID: 2100000, guid: b921b341a1143bf4fb0b799e6179ea9e, type: 2}
+  instanceMaterial: {fileID: 2100000, guid: fd1a4ac1e7aba064ea191ccbb10eb5e2, type: 2}
+  perlinTexture: {fileID: 2800000, guid: 4f8b8ef0adc632b469175fe4622f816a, type: 3}
 --- !u!1 &1630005027
 GameObject:
   m_ObjectHideFlags: 0
