@@ -16,13 +16,13 @@ float TerrainSmoothHeight(float x, float z)
     int biome3 = GetBiome(patchPos.x-smoothPatchSize/2, patchPos.y + smoothPatchSize/2);
     
     
-    // [branch]
-    // if(biome0 == biome1 && biome1 == biome2 && biome2==biome3)
-    // {
-    //     return GetBiomeHeight(GetBiome(x,z),x,z);
-    // }
-    // else
-    // {
+    [branch]
+    if(biome0 == biome1 && biome1 == biome2 && biome2==biome3)
+    {
+        return GetBiomeHeight(biome0,x,z);
+    }
+    else
+    {
         float biomeHeight0 = GetBiomeHeight(biome0,x,z);
         float biomeHeight1 = GetBiomeHeight(biome1,x,z);
         float biomeHeight2 = GetBiomeHeight(biome2,x,z);
@@ -36,7 +36,7 @@ float TerrainSmoothHeight(float x, float z)
         float c = lerp(a, b, t1);
 
         return c;
-    //}
+    }
 }
 
 float TerrainHeight(float x, float z)
