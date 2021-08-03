@@ -7,6 +7,11 @@ struct RenderPatch
     //float heights[256];
 };
 
+struct NodeDescriptor
+{
+    uint branch;
+};
+
 struct Bound
 {
     float3 minPosition;

@@ -9,9 +9,14 @@
 
 #include "./InputStruct.hlsl"
 
+RWStructuredBuffer<NodeDescriptor> nodeDescriptors;
+
 AppendStructuredBuffer<uint2> appendNodeList;   // first A
 ConsumeStructuredBuffer<uint2> consumeNodeList; // first B
 AppendStructuredBuffer<uint3> appendFinalNodeList;    // result
+
+uniform uint _sectorOffset[6];
+uniform float4 _worldLodParams[6];
 
 //QuadTreeBuild
 uniform float4 _worldParams;
@@ -23,6 +28,7 @@ uniform float4 _cameraFrustumPlanes[6];
 uniform float4 _nodeEvaluationC;
 
 //Lod Map
+RWTexture2D<float4> _lodMap;
 
 //RenderPatchList
 StructuredBuffer<uint3> finalNodeList;
@@ -30,19 +36,23 @@ AppendStructuredBuffer<RenderPatch> culledPatchList;
 
 float GetNodeSize(uint curLodLevel)
 {
-    return (float)GRIDSIZE*pow(2,curLodLevel);
+    return _worldLodParams[curLodLevel].x;
 }
 
 float GetNodeCount(uint curLodLevel)
 {
-    uint highestCount = TERRAIN_WIDTH/GRIDSIZE;
-    return (float)highestCount/pow(2,curLodLevel);
+    return _worldLodParams[curLodLevel].z;
+}
+
+uint GetSectorCountPerNode(uint lod)
+{
+    return (uint)_worldLodParams[lod].w;
 }
 
 float3 GetNodeWorldPosition(uint2 node, uint curLodLevel)
 {
     float nodeSize = GetNodeSize(curLodLevel);
-    float nodeCount = GetNodeCount(curLodLevel);
+    float nodeCount = (float)GetNodeCount(curLodLevel);
     float2 nodePositionWS = ((float2)node+0.5f-nodeCount/2)*nodeSize;
     //TODO: Add y to NodeWorldPosition
     return float3(nodePositionWS.x,0,nodePositionWS.y);
@@ -59,6 +69,17 @@ float3 GetRenderPatchPosition(uint2 patchId, uint lod)
     float2 patchPos = ((float2)patchId+0.5f-4.0f) * patchSize;
     return float3(patchPos.x, 0.0f, patchPos.y);
 }
+
+uint GetNodeID(uint3 nodeLod)
+{
+    return _sectorOffset[nodeLod.z] + nodeLod.x * GetNodeCount(nodeLod.z) + nodeLod.y;
+}
+
+uint GetNodeID(uint2 node, uint lod)
+{
+    return GetNodeID(uint3(node,lod));
+}
+
 bool CalcuteSubdivide(uint2 node)
 {
     float3 nodePositionWS = GetNodeWorldPosition(node, _curLodLevel);
@@ -77,25 +98,44 @@ bool CalcuteSubdivide(uint2 node)
 void TerrainNodeBuild (uint3 id : SV_DispatchThreadID)
 {
     uint2 curNode = consumeNodeList.Consume();
-    
-    [branch]
+    uint nodeId = GetNodeID(curNode, _curLodLevel);
+    NodeDescriptor desc = nodeDescriptors[nodeId];
+
     if(_curLodLevel > 0 && CalcuteSubdivide(curNode))
     {
         appendNodeList.Append(curNode * 2);
         appendNodeList.Append(curNode * 2 + uint2(1,0));
         appendNodeList.Append(curNode * 2 + uint2(0,1));
         appendNodeList.Append(curNode * 2 + uint2(1,1));
+        desc.branch = 1;
     }
     else
     {
         appendFinalNodeList.Append(uint3(curNode, _curLodLevel));
+        desc.branch = 0;
     }
+
+    nodeDescriptors[nodeId] = desc;
 }
 
-[numthreads(1,1,1)]
+[numthreads(8,8,1)]
 void TerrainLODMap (uint3 id : SV_DispatchThreadID)
 {
-
+    uint2 sectorLoc = id.xy;
+    [unroll]
+    for(uint lod = MAXTERRAINLOD; lod >= 0; lod --)
+    {
+        uint sectorCount = pow(2,lod);
+        uint2 nodeLoc = sectorLoc / sectorCount;
+        uint nodeId = GetNodeID(nodeLoc,lod);
+        NodeDescriptor desc = nodeDescriptors[nodeId];
+        if(desc.branch == 0)
+        {
+            _lodMap[sectorLoc] = lod * 1.0 / MAXTERRAINLOD;
+            return;
+        }
+    }
+    _lodMap[sectorLoc] = 0;
 }
 
 bool IsOutSidePlane(float4 plane, float3 position)

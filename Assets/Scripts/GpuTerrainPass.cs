@@ -59,6 +59,8 @@ class GpuTerrainPass : CustomPass
         public static readonly int r_LodMap = Shader.PropertyToID("_lodMap");
         public static readonly int r_NodeDescriptors = Shader.PropertyToID("nodeDescriptors");
         public static readonly int r_CulledPatchList = Shader.PropertyToID("culledPatchList");
+        public static readonly int r_SectorOffset = Shader.PropertyToID("_sectorOffset");
+        public static readonly int r_WorldLodParams = Shader.PropertyToID("_worldLodParams");
     }
 
     Camera m_Camera;
@@ -82,17 +84,14 @@ class GpuTerrainPass : CustomPass
     private ComputeBuffer m_DispatchIndirectArgsBuffer;
 
     private uint[] args = new uint[5]{0, 0, 0, 0, 0};
-
     private const int k_MaxNodeCount = 200;
     private const int k_MaxTempNodeCount = 50;
 
-    protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
-    {
-        //Mesh Init
-        //m_TerrainMesh = MeshUtility.CreatePlaneMesh(terrainParams.terrainPatchSize);
+    private RenderTexture m_LodMap;
 
-        //1 Compute Shader Kernel Init
-        //1.1   Terrain Build
+    protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
+    {        
+        //ComputeShader Kernel
         m_NodeBuildKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainNodeBuildKernelName);
         m_LODMapKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainLodMapKernelName);
         m_VisibleRenderKernelID = m_TerrainBuildComputeShader.FindKernel(s_TerrainVisibleRenderKernelName);
@@ -127,14 +126,39 @@ class GpuTerrainPass : CustomPass
         //Material params bind
         m_IndirectMaterial.SetBuffer("renderPatchList", m_CulledPatchList);
 
+        float wSize = 10240.0f;
+        int nodeCount = 5;
+        Vector4[] worldLODParams = new Vector4[6];
+        for(var lod = 5; lod >=0; lod --)
+        {
+            var nodeSize = wSize / nodeCount;
+            var patchExtent = nodeSize / 16;
+            var sectorCountPerNode = (int)Mathf.Pow(2,lod);
+            worldLODParams[lod] = new Vector4(nodeSize,patchExtent,nodeCount,sectorCountPerNode);
+            nodeCount *= 2;
+        }
+        m_TerrainBuildComputeShader.SetVectorArray(ShaderParms.r_WorldLodParams,worldLODParams);
+
+        int[] nodeIDOffsetLOD = new int[6 * 4];
+        int nodeIdOffset = 0;
+        for(int lod = 5; lod >=0; lod --)
+        {
+            nodeIDOffsetLOD[lod * 4] = nodeIdOffset;
+            nodeIdOffset += (int)(worldLODParams[lod].z * worldLODParams[lod].z);
+        }
+        m_TerrainBuildComputeShader.SetInts(ShaderParms.r_SectorOffset, nodeIDOffsetLOD);
+
         //ComputeShader params bind
         m_TerrainBuildComputeShader.SetVector(ShaderParms.r_NodeEvaluationC, m_NodeEvaluationC);
-        
+
         //ComputeShader NodeBuildKernel Buffer Bind
         m_TerrainBuildComputeShader.SetBuffer(m_NodeBuildKernelID, ShaderParms.r_AppendFinalNodeList, m_FinalNodeList);
+        m_TerrainBuildComputeShader.SetBuffer(m_NodeBuildKernelID, ShaderParms.r_NodeDescriptors, m_NodeDescriptors);
 
         //ComputeShader LodMap Buffer Bind
-        
+        m_LodMap = TextureUtility.CreateLODMap(160);
+        m_TerrainBuildComputeShader.SetTexture(m_LODMapKernelID, ShaderParms.r_LodMap, m_LodMap);
+        m_TerrainBuildComputeShader.SetBuffer(m_LODMapKernelID, ShaderParms.r_NodeDescriptors, m_NodeDescriptors);
 
         //COmputeShader VisibleRender Buffer Bind
         m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_FinalNodeList, m_FinalNodeList);
@@ -178,6 +202,7 @@ class GpuTerrainPass : CustomPass
         }
 
         //Stage 2 : Generate LodMap
+        ctx.cmd.DispatchCompute(m_TerrainBuildComputeShader, m_LODMapKernelID, 20, 20, 1);
 
         //Stage 3 : Generate RenderPatchList
         ctx.cmd.CopyCounterValue(m_FinalNodeList, m_DispatchIndirectArgsBuffer, 0);
@@ -186,8 +211,6 @@ class GpuTerrainPass : CustomPass
 
         //Draw!!!!!!!!
         ctx.cmd.CopyCounterValue(m_CulledPatchList, m_IndirectArgsBuffer, 4);
-        //ctx.cmd.DrawMeshInstancedIndirect(m_TerrainMesh,0,m_IndirectMaterial,m_ShaderPassID,m_IndirectArgsBuffer);
-        //Graphics.DrawMeshInstancedIndirect(m_TerrainMesh, 0, m_IndirectMaterial, new Bounds(Vector3.zero, Vector3.one * 10240), m_IndirectArgsBuffer);
     }
 
     protected override void Cleanup()
@@ -214,7 +237,10 @@ class GpuTerrainPass : CustomPass
             m_CulledPatchList.Release();
 
         if(m_DispatchIndirectArgsBuffer != null)
-            m_DispatchIndirectArgsBuffer.Release();        
+            m_DispatchIndirectArgsBuffer.Release();      
+
+        if(m_LodMap != null)
+            m_LodMap.Release();  
     }    
 
     private void UpdateCameraFrustumPlanes(Camera camera)
