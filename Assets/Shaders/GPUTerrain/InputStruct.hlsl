@@ -3,7 +3,7 @@ struct RenderPatch
     float2 position;
     //float2 minMaxHeight;
     uint lod;
-    //uint4 lodTrans;
+    uint4 lodTrans;
     //float heights[256];
 };
 

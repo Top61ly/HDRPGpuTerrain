@@ -114,7 +114,7 @@ class GpuTerrainPass : CustomPass
         m_TempNodeListA = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
         m_TempNodeListB = new ComputeBuffer(k_MaxTempNodeCount, 8, ComputeBufferType.Append);
         m_FinalNodeList = new ComputeBuffer(k_MaxNodeCount, 12, ComputeBufferType.Append);
-        m_CulledPatchList = new ComputeBuffer(k_MaxNodeCount * 64, 12, ComputeBufferType.Append);
+        m_CulledPatchList = new ComputeBuffer(k_MaxNodeCount * 64, 12+4*4, ComputeBufferType.Append);
 
         //Init Indirect Draw Args 
         m_IndirectArgsBuffer = GpuTerrainRender.m_IndirectArgs;
@@ -160,7 +160,8 @@ class GpuTerrainPass : CustomPass
         m_TerrainBuildComputeShader.SetTexture(m_LODMapKernelID, ShaderParms.r_LodMap, m_LodMap);
         m_TerrainBuildComputeShader.SetBuffer(m_LODMapKernelID, ShaderParms.r_NodeDescriptors, m_NodeDescriptors);
 
-        //COmputeShader VisibleRender Buffer Bind
+        //ComputeShader VisibleRender Buffer Bind
+        m_TerrainBuildComputeShader.SetTexture(m_VisibleRenderKernelID, ShaderParms.r_LodMap, m_LodMap);
         m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_FinalNodeList, m_FinalNodeList);
         m_TerrainBuildComputeShader.SetBuffer(m_VisibleRenderKernelID, ShaderParms.r_CulledPatchList, m_CulledPatchList);
     }

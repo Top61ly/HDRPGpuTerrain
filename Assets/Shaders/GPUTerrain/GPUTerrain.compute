@@ -181,6 +181,7 @@ RenderPatch CreatePatch(uint3 node, uint2 patchId)
     float3 patchOPos = GetRenderPatchPosition(patchId, node.z);
     patch.position = patchOPos.xz + nodePosition.xz;
     patch.lod = node.z;
+    patch.lodTrans = 0;
     return patch;
 }
 
@@ -192,6 +193,42 @@ Bound CreateBound(RenderPatch patch)
     bound.minPosition = float3(nodePos.x-patchSize/2, _cameraPos.y, nodePos.y-patchSize/2);
     bound.maxPosition = float3(nodePos.x+patchSize/2, _cameraPos.y, nodePos.y+patchSize/2);
     return bound;
+}
+
+uint4 GetSectorBound(uint3 nodeLoc)
+{
+    uint sectorCountPerNode = GetSectorCountPerNode(nodeLoc.z);
+    uint2 sectorMin = nodeLoc.xy * sectorCountPerNode;
+    return uint4(sectorMin,sectorMin + sectorCountPerNode - 1);
+}
+
+uint GetLod(uint2 sectorLoc)
+{
+    if(sectorLoc.x < 0 || sectorLoc.y < 0 || sectorLoc.x >=160 || sectorLoc.y >= 160){
+        return 0;
+    }
+    return round(_lodMap[sectorLoc].r * MAXTERRAINLOD);
+}
+
+void SetLodTrans(inout RenderPatch patch, uint3 node, uint2 patchId)
+{
+    uint lod = node.z;
+    uint4 sectorBound = GetSectorBound(node);
+    int4 lodTrans = uint4(0,0,0,0);
+    //up
+    if(patchId.y == 7)
+        lodTrans.x = GetLod(sectorBound.zw + int2(0,1)) - lod;
+    //down
+    if(patchId.y == 0)
+        lodTrans.y = GetLod(sectorBound.xy + int2(0,-1)) - lod;
+    //left
+    if(patchId.x == 0)
+        lodTrans.z = GetLod(sectorBound.xy + int2(-1,0)) - lod;
+    //right
+    if(patchId.x == 7)
+        lodTrans.w = GetLod(sectorBound.zw + int2(1,0)) - lod;
+    
+    patch.lodTrans = (uint4)max(0,lodTrans);
 }
 
 [numthreads(8,8,1)]
@@ -208,6 +245,8 @@ void TerrainVisibleRender (uint3 id : SV_DispatchThreadID, uint3 groupId:SV_Grou
 
     if(Cull(bound))
         return;
+    
+    SetLodTrans(patch, node, patchId);
     
     culledPatchList.Append(patch);
 }
