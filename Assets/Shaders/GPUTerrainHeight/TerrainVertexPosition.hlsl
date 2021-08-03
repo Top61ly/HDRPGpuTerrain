@@ -49,7 +49,7 @@ void FixLodSeam(inout float3 vertexOS, RenderPatch patch)
     if(lodTrans.w > 0 && vertexIndex.x == PATCH_GRID_COUNT)
     {
         uint gridStripCount = pow(2, lodTrans.w);
-        uint modIndex = vertexIndex.y & gridStripCount;
+        uint modIndex = vertexIndex.y % gridStripCount;
         if(modIndex != 0)
         {
             vertexOS.z += PATCH_RESOLUTION * (gridStripCount - modIndex);
@@ -69,12 +69,11 @@ void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, o
     oposOS = posOS*pow(2,curlod);
     oposOS += float3(patchPos.x,0,patchPos.y);
     
-    //int biome = GetBiome(oposOS.x, oposOS.z);
-    //oposOS.y = GetBiomeHeight(biome,oposOS.x, oposOS.z)*200.0f;
+    oposOS.y = TerrainHeight(oposOS.x, oposOS.z)*200.0f;
 
-    oposOS.y = 0;//TerrainSmoothHeight((float2)vertexIndex, oposOS.x, oposOS.z, patchSize, patchPos)*200.0f;
+    //oposOS.y = TerrainSmoothHeight((float2)vertexIndex, oposOS.x, oposOS.z, patchSize, patchPos)*200.0f;
     
-    color = 1;//GetBlendMask(oposOS.x, oposOS.z);
+    color = GetBlendMask(oposOS.x, oposOS.z);
 }
 
 void setupProcedural()
