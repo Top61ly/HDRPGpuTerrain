@@ -143,27 +143,27 @@ bool IsOutSidePlane(float4 plane, float3 position)
     return dot(plane.xyz, position) + plane.w < 0;
 }
 
-bool IsOutSideAllPlanes(float3 position)
+bool IsAABBOutSidePlanes(float4 plane, Bound bound)
 {
-    [unroll]
-    for(int i=0; i<6; i++)
-    {
-        if(IsOutSidePlane(_cameraFrustumPlanes[i], position))
-            return true;
-    }
-    return false;
+    return IsOutSidePlane(plane, bound.minPosition) &&
+        IsOutSidePlane(plane, bound.maxPosition) &&
+        IsOutSidePlane(plane, float3(bound.minPosition.x, bound.minPosition.y, bound.maxPosition.z)) &&
+        IsOutSidePlane(plane, float3(bound.minPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
+        IsOutSidePlane(plane, float3(bound.minPosition.x, bound.maxPosition.y, bound.maxPosition.z)) &&
+        IsOutSidePlane(plane, float3(bound.maxPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
+        IsOutSidePlane(plane, float3(bound.maxPosition.x, bound.minPosition.y, bound.minPosition.z)) &&
+        IsOutSidePlane(plane, float3(bound.maxPosition.x, bound.minPosition.y, bound.maxPosition.z));
 }
 
 bool FrustumCull(Bound bound)
 {
-    return IsOutSideAllPlanes(bound.minPosition) &&
-        IsOutSideAllPlanes(bound.maxPosition) &&
-        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.minPosition.y, bound.maxPosition.z)) &&
-        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
-        IsOutSideAllPlanes(float3(bound.minPosition.x, bound.maxPosition.y, bound.maxPosition.z)) &&
-        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.maxPosition.y, bound.minPosition.z)) &&
-        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.minPosition.y, bound.minPosition.z)) &&
-        IsOutSideAllPlanes(float3(bound.maxPosition.x, bound.minPosition.y, bound.maxPosition.z));
+    [unroll]
+    for (int i = 0; i<6; i++)
+    {
+        if(IsAABBOutSidePlanes(_cameraFrustumPlanes[i], bound))
+            return true;
+    }
+    return false;
 }
 
 bool Cull(Bound bound)
@@ -190,8 +190,8 @@ Bound CreateBound(RenderPatch patch)
     Bound bound;
     float2 nodePos = patch.position;
     float patchSize = GetRenderPatchSize(patch.lod);
-    bound.minPosition = float3(nodePos.x-patchSize/2, _cameraPos.y, nodePos.y-patchSize/2);
-    bound.maxPosition = float3(nodePos.x+patchSize/2, _cameraPos.y, nodePos.y+patchSize/2);
+    bound.minPosition = float3(nodePos.x-patchSize/2, -1000, nodePos.y-patchSize/2);
+    bound.maxPosition = float3(nodePos.x+patchSize/2, 1000, nodePos.y+patchSize/2);
     return bound;
 }
 

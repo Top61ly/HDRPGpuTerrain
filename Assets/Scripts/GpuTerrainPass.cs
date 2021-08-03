@@ -66,7 +66,7 @@ class GpuTerrainPass : CustomPass
     Camera m_Camera;
     Plane[] m_CameraFrustumPlanes = new Plane[6];
     Vector4[] m_CameraFrustumPlanesV4 = new Vector4[6];
-    Vector4 m_NodeEvaluationC = new Vector4(0.9f,0,0,0);
+    Vector4 m_NodeEvaluationC = new Vector4(1.0f,0,0,0);
 
     //Node Descriptors
     private ComputeBuffer m_NodeDescriptors;

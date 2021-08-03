@@ -69,10 +69,9 @@ void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, o
     oposOS = posOS*pow(2,curlod);
     oposOS += float3(patchPos.x,0,patchPos.y);
     
-    oposOS.y = TerrainHeight(oposOS.x, oposOS.z)*200.0f;
-
-    //oposOS.y = TerrainSmoothHeight((float2)vertexIndex, oposOS.x, oposOS.z, patchSize, patchPos)*200.0f;
-    
+    //oposOS.y = TerrainHeight(oposOS.x, oposOS.z)*200.0f;
+    //oposOS.y = 0.0f;
+    oposOS.y = TerrainSmoothHeight(oposOS.x, oposOS.z)*200.0f;
     color = GetBlendMask(oposOS.x, oposOS.z);
 }
 
