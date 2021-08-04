@@ -394,7 +394,7 @@ MonoBehaviour:
           maxLod: 5
           terrianTileCount: 5
           terrianWidth: 10240
-        m_TerrainMesh: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
+        m_TerrainMesh: {fileID: 4300000, guid: a3e212256f4f94464bc40cfcd958ba2a, type: 2}
         m_IndirectMaterial: {fileID: 2100000, guid: fd1a4ac1e7aba064ea191ccbb10eb5e2, type: 2}
         m_TerrainBuildComputeShader: {fileID: 7200000, guid: 9755dea094fe96d46b98f0e696006178, type: 3}
 --- !u!4 &1025778954
@@ -424,7 +424,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9e2b13289aeac24e838304867536c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  terrainPatch: {fileID: 4300000, guid: aca088623bbd641e690a95486189d077, type: 2}
+  terrainPatch: {fileID: 4300000, guid: a3e212256f4f94464bc40cfcd958ba2a, type: 2}
   instanceMaterial: {fileID: 2100000, guid: fd1a4ac1e7aba064ea191ccbb10eb5e2, type: 2}
   perlinTexture: {fileID: 2800000, guid: 4f8b8ef0adc632b469175fe4622f816a, type: 3}
 --- !u!1 &1630005027
@@ -635,34 +635,3 @@ MonoBehaviour:
       enableFptlForForwardOpaque: 0
       enableBigTilePrepass: 0
       isFptlEnabled: 0
---- !u!1 &2062123529
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2062123530}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2062123530
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2062123529}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
