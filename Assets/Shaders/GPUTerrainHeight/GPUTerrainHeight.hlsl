@@ -1,5 +1,8 @@
 #include "./TerrainBiomeHeight.hlsl"
 
+// #pragma multi_compile_instancing
+// #pragma instancing_options procedural:setupProcedural
+
 // 3  x  2
 // y     y
 // 0  x  1

@@ -2,6 +2,19 @@ Shader "GPUTerrain"
 {
     Properties
     {
+        UVXZScale("UVXZScale", Float) = 1
+        [NoScaleOffset]Layer0("Layer0", 2D) = "white" {}
+        [NoScaleOffset]Layer1("Layer1", 2D) = "white" {}
+        [NoScaleOffset]Layer2("Layer2", 2D) = "white" {}
+        [NoScaleOffset]Layer3("Layer3", 2D) = "white" {}
+        [NoScaleOffset]LayerNormal0("LayerNormal0", 2D) = "white" {}
+        [NoScaleOffset]LayerNormal1("LayerNormal1", 2D) = "white" {}
+        [NoScaleOffset]LayerNormal2("LayerNormal2", 2D) = "white" {}
+        [NoScaleOffset]LayerNormal3("LayerNormal3", 2D) = "white" {}
+        [NoScaleOffset]LayerMask0("LayerMask0", 2D) = "white" {}
+        [NoScaleOffset]LayerMask1("LayerMask1", 2D) = "white" {}
+        [NoScaleOffset]LayerMask2("LayerMask2", 2D) = "white" {}
+        [NoScaleOffset]LayerMask3("LayerMask3", 2D) = "white" {}
         [HideInInspector]_EmissionColor("Color", Color) = (1, 1, 1, 1)
         [HideInInspector]_RenderQueueType("Float", Float) = 1
         [HideInInspector][ToggleUI]_AddPrecomputedVelocity("Boolean", Float) = 0
@@ -237,6 +250,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -247,6 +273,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -279,12 +330,16 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
         };
         struct VertexDescriptionInputs
         {
@@ -298,7 +353,9 @@ Shader "GPUTerrain"
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -753,7 +810,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -805,6 +862,7 @@ Shader "GPUTerrain"
             #define ATTRIBUTES_NEED_TEXCOORD1
             #define ATTRIBUTES_NEED_TEXCOORD2
             #define ATTRIBUTES_NEED_COLOR
+            #define VARYINGS_NEED_POSITION_WS
 
             #define HAVE_MESH_MODIFICATION
 
@@ -835,6 +893,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -894,6 +953,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -904,6 +976,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -926,7 +1023,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -940,12 +1037,17 @@ Shader "GPUTerrain"
              float4 uv1 : TEXCOORD1;
              float4 uv2 : TEXCOORD2;
              float4 color : COLOR;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+             float3 positionRWS;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
         };
         struct VertexDescriptionInputs
         {
@@ -953,11 +1055,15 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
+             float3 interp0 : INTERP0;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -965,6 +1071,7 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
+            output.interp0.xyz =  input.positionRWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
@@ -975,6 +1082,7 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
+            output.positionRWS = input.interp0.xyz;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
@@ -987,7 +1095,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             struct VertexDescription
@@ -1016,14 +1139,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -1088,6 +1314,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
 
         #ifdef HAVE_VFX_MODIFICATION
             // FragInputs from VFX come from two places: Interpolator or CBuffer.
@@ -1117,6 +1344,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
@@ -1409,7 +1637,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -1462,6 +1690,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
             #define VARYINGS_NEED_TANGENT_TO_WORLD
 
             #define HAVE_MESH_MODIFICATION
@@ -1493,6 +1722,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -1552,6 +1782,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -1562,6 +1805,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -1583,6 +1851,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -1592,14 +1861,19 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
+             float3 positionRWS;
              float3 normalWS;
              float4 tangentWS;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -1611,15 +1885,19 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
-             float4 interp1 : INTERP1;
+             float3 interp1 : INTERP1;
              float4 interp2 : INTERP2;
+             float4 interp3 : INTERP3;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -1627,12 +1905,13 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
-            output.interp0.xyz =  input.normalWS;
-            output.interp1.xyzw =  input.tangentWS;
+            output.interp0.xyz =  input.positionRWS;
+            output.interp1.xyz =  input.normalWS;
+            output.interp2.xyzw =  input.tangentWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.interp2.xyzw =  input.SplatMapColor;
+            output.interp3.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -1640,12 +1919,13 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
-            output.normalWS = input.interp0.xyz;
-            output.tangentWS = input.interp1.xyzw;
+            output.positionRWS = input.interp0.xyz;
+            output.normalWS = input.interp1.xyz;
+            output.tangentWS = input.interp2.xyzw;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.SplatMapColor = input.interp2.xyzw;
+            output.SplatMapColor = input.interp3.xyzw;
             return output;
         }
 
@@ -1663,6 +1943,22 @@ Shader "GPUTerrain"
         #else
             Out = 0;
         #endif
+        }
+
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
         }
 
             // Graph Vertex
@@ -1705,14 +2001,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -1783,6 +2182,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
             output.tangentToWorld = BuildTangentToWorld(input.tangentWS, input.normalWS);
 
         #ifdef HAVE_VFX_MODIFICATION
@@ -1813,6 +2213,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -2105,7 +2506,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -2158,6 +2559,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
 
             #define HAVE_MESH_MODIFICATION
 
@@ -2189,6 +2591,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -2248,6 +2651,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -2258,6 +2674,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -2281,6 +2722,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -2290,12 +2732,17 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+             float3 positionRWS;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -2307,13 +2754,17 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
-             float4 interp0 : INTERP0;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
+             float3 interp0 : INTERP0;
+             float4 interp1 : INTERP1;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -2321,10 +2772,11 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
+            output.interp0.xyz =  input.positionRWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.interp0.xyzw =  input.SplatMapColor;
+            output.interp1.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -2332,10 +2784,11 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
+            output.positionRWS = input.interp0.xyz;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.SplatMapColor = input.interp0.xyzw;
+            output.SplatMapColor = input.interp1.xyzw;
             return output;
         }
 
@@ -2353,6 +2806,22 @@ Shader "GPUTerrain"
         #else
             Out = 0;
         #endif
+        }
+
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
         }
 
             // Graph Vertex
@@ -2395,14 +2864,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -2473,6 +3045,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
 
         #ifdef HAVE_VFX_MODIFICATION
             // FragInputs from VFX come from two places: Interpolator or CBuffer.
@@ -2502,6 +3075,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -2803,7 +3377,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma multi_compile_fragment _ WRITE_MSAA_DEPTH
@@ -2895,6 +3469,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -2954,6 +3529,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -2964,6 +3552,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -2987,6 +3600,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -2998,7 +3612,9 @@ Shader "GPUTerrain"
              float4 tangentOS : TANGENT;
              float4 uv1 : TEXCOORD1;
              float4 uv2 : TEXCOORD2;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
@@ -3008,7 +3624,9 @@ Shader "GPUTerrain"
              float4 tangentWS;
              float4 texCoord1;
              float4 texCoord2;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -3020,12 +3638,15 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
              float3 interp1 : INTERP1;
              float4 interp2 : INTERP2;
@@ -3083,6 +3704,22 @@ Shader "GPUTerrain"
         #endif
         }
 
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
+
             // Graph Vertex
             struct VertexDescription
         {
@@ -3123,14 +3760,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -3234,6 +3974,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -3536,7 +4277,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -3559,6 +4300,7 @@ Shader "GPUTerrain"
             // allowing for FragInputs to capture CI's intended for ShaderGraph's SDI.
             struct CustomInterpolators
         {
+            float4 SplatMapColor;
         };
         #define USE_CUSTOMINTERP_SUBSTRUCT
 
@@ -3588,6 +4330,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
             #define VARYINGS_NEED_TANGENT_TO_WORLD
 
             #define HAVE_MESH_MODIFICATION
@@ -3678,6 +4421,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -3688,6 +4444,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -3711,6 +4492,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -3720,14 +4502,20 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
+             float3 positionRWS;
              float3 normalWS;
              float4 tangentWS;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
+             float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
         {
@@ -3738,13 +4526,19 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
+             float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
-             float4 interp1 : INTERP1;
+             float3 interp1 : INTERP1;
+             float4 interp2 : INTERP2;
+             float4 interp3 : INTERP3;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -3752,11 +4546,13 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
-            output.interp0.xyz =  input.normalWS;
-            output.interp1.xyzw =  input.tangentWS;
+            output.interp0.xyz =  input.positionRWS;
+            output.interp1.xyz =  input.normalWS;
+            output.interp2.xyzw =  input.tangentWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
+            output.interp3.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -3764,11 +4560,13 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
-            output.normalWS = input.interp0.xyz;
-            output.tangentWS = input.interp1.xyzw;
+            output.positionRWS = input.interp0.xyz;
+            output.normalWS = input.interp1.xyz;
+            output.tangentWS = input.interp2.xyzw;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
+            output.SplatMapColor = input.interp3.xyzw;
             return output;
         }
 
@@ -3788,12 +4586,29 @@ Shader "GPUTerrain"
         #endif
         }
 
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
+
             // Graph Vertex
             struct VertexDescription
         {
             float3 Position;
             float3 Normal;
             float3 Tangent;
+            float4 SplatMapColor;
         };
 
         VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
@@ -3807,6 +4622,7 @@ Shader "GPUTerrain"
             description.Position = _GetTerrainVertexCustomFunction_e97874afe0464ab3bad388ede37423f5_oposOS_2;
             description.Normal = IN.ObjectSpaceNormal;
             description.Tangent = IN.ObjectSpaceTangent;
+            description.SplatMapColor = _GetTerrainVertexCustomFunction_e97874afe0464ab3bad388ede37423f5_color_3;
             return description;
         }
 
@@ -3821,9 +4637,86 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
             surface.Alpha = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
             return surface;
         }
 
@@ -3878,7 +4771,7 @@ Shader "GPUTerrain"
             input.normalOS = vertexDescription.Normal;
             input.tangentOS.xyz = vertexDescription.Tangent;
 
-            
+            varyings.SplatMapColor = vertexDescription.SplatMapColor;
 
             return input;
         }
@@ -3894,6 +4787,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
             output.tangentToWorld = BuildTangentToWorld(input.tangentWS, input.normalWS);
 
         #ifdef HAVE_VFX_MODIFICATION
@@ -3903,7 +4797,7 @@ Shader "GPUTerrain"
         #endif
 
             // splice point to copy custom interpolator fields from varyings to frag inputs
-            
+            output.customInterpolators.SplatMapColor = input.SplatMapColor;
 
             return output;
         }
@@ -3924,9 +4818,10 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
-            
+            output.SplatMapColor = input.customInterpolators.SplatMapColor;
 
             return output;
         }
@@ -4213,7 +5108,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -4266,6 +5161,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
 
             #define HAVE_MESH_MODIFICATION
 
@@ -4296,6 +5192,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -4355,6 +5252,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -4365,6 +5275,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -4386,6 +5321,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -4395,12 +5331,17 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+             float3 positionRWS;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -4412,13 +5353,17 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
-             float4 interp0 : INTERP0;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
+             float3 interp0 : INTERP0;
+             float4 interp1 : INTERP1;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -4426,10 +5371,11 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
+            output.interp0.xyz =  input.positionRWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.interp0.xyzw =  input.SplatMapColor;
+            output.interp1.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -4437,10 +5383,11 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
+            output.positionRWS = input.interp0.xyz;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.SplatMapColor = input.interp0.xyzw;
+            output.SplatMapColor = input.interp1.xyzw;
             return output;
         }
 
@@ -4458,6 +5405,22 @@ Shader "GPUTerrain"
         #else
             Out = 0;
         #endif
+        }
+
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
         }
 
             // Graph Vertex
@@ -4500,14 +5463,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -4578,6 +5644,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
 
         #ifdef HAVE_VFX_MODIFICATION
             // FragInputs from VFX come from two places: Interpolator or CBuffer.
@@ -4607,6 +5674,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -4908,7 +5976,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma multi_compile _ WRITE_NORMAL_BUFFER
@@ -4964,6 +6032,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
             #define VARYINGS_NEED_TANGENT_TO_WORLD
 
             #define HAVE_MESH_MODIFICATION
@@ -4995,6 +6064,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -5054,6 +6124,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -5064,6 +6147,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -5087,6 +6195,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -5096,14 +6205,19 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
+             float3 positionRWS;
              float3 normalWS;
              float4 tangentWS;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -5115,15 +6229,19 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
-             float4 interp1 : INTERP1;
+             float3 interp1 : INTERP1;
              float4 interp2 : INTERP2;
+             float4 interp3 : INTERP3;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -5131,12 +6249,13 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
-            output.interp0.xyz =  input.normalWS;
-            output.interp1.xyzw =  input.tangentWS;
+            output.interp0.xyz =  input.positionRWS;
+            output.interp1.xyz =  input.normalWS;
+            output.interp2.xyzw =  input.tangentWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.interp2.xyzw =  input.SplatMapColor;
+            output.interp3.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -5144,12 +6263,13 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
-            output.normalWS = input.interp0.xyz;
-            output.tangentWS = input.interp1.xyzw;
+            output.positionRWS = input.interp0.xyz;
+            output.normalWS = input.interp1.xyz;
+            output.tangentWS = input.interp2.xyzw;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.SplatMapColor = input.interp2.xyzw;
+            output.SplatMapColor = input.interp3.xyzw;
             return output;
         }
 
@@ -5167,6 +6287,22 @@ Shader "GPUTerrain"
         #else
             Out = 0;
         #endif
+        }
+
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
         }
 
             // Graph Vertex
@@ -5209,14 +6345,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -5287,6 +6526,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
             output.tangentToWorld = BuildTangentToWorld(input.tangentWS, input.normalWS);
 
         #ifdef HAVE_VFX_MODIFICATION
@@ -5317,6 +6557,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -5618,7 +6859,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma multi_compile_fragment _ LIGHT_LAYERS
@@ -5721,6 +6962,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -5780,6 +7022,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -5790,6 +7045,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -5813,6 +7093,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -5824,7 +7105,9 @@ Shader "GPUTerrain"
              float4 tangentOS : TANGENT;
              float4 uv1 : TEXCOORD1;
              float4 uv2 : TEXCOORD2;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
@@ -5834,7 +7117,9 @@ Shader "GPUTerrain"
              float4 tangentWS;
              float4 texCoord1;
              float4 texCoord2;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -5846,12 +7131,15 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
              float3 interp1 : INTERP1;
              float4 interp2 : INTERP2;
@@ -5909,6 +7197,22 @@ Shader "GPUTerrain"
         #endif
         }
 
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
+
             // Graph Vertex
             struct VertexDescription
         {
@@ -5950,14 +7254,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             {
                 surface.VTPackedFeedback = float4(1.0f,1.0f,1.0f,.0f);
             }
@@ -6064,6 +7471,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -6369,7 +7777,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -6476,6 +7884,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -6535,6 +7944,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -6545,6 +7967,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -6571,6 +8018,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -6582,7 +8030,9 @@ Shader "GPUTerrain"
              float4 tangentOS : TANGENT;
              float4 uv1 : TEXCOORD1;
              float4 uv2 : TEXCOORD2;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
@@ -6592,7 +8042,9 @@ Shader "GPUTerrain"
              float4 tangentWS;
              float4 texCoord1;
              float4 texCoord2;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -6604,12 +8056,15 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float3 interp0 : INTERP0;
              float3 interp1 : INTERP1;
              float4 interp2 : INTERP2;
@@ -6667,6 +8122,22 @@ Shader "GPUTerrain"
         #endif
         }
 
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
+
             // Graph Vertex
             struct VertexDescription
         {
@@ -6708,14 +8179,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             {
                 surface.VTPackedFeedback = float4(1.0f,1.0f,1.0f,.0f);
             }
@@ -6822,6 +8396,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -7115,7 +8690,7 @@ Shader "GPUTerrain"
         #pragma fragment Frag
         #pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch
         #pragma multi_compile_instancing
-        #pragma instancing_options procedural:setupProcedural
+#pragma instancing_options procedural:setupProcedural
 
             // Keywords
             #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
@@ -7168,6 +8743,7 @@ Shader "GPUTerrain"
             // Attribute
             #define ATTRIBUTES_NEED_NORMAL
             #define ATTRIBUTES_NEED_TANGENT
+            #define VARYINGS_NEED_POSITION_WS
 
             #define HAVE_MESH_MODIFICATION
 
@@ -7198,6 +8774,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -7257,6 +8834,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -7267,6 +8857,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -7290,6 +8905,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
         	#include "Assets/Shaders/GPUTerrainHeight/TerrainVertexPosition.hlsl"
+        #include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -7299,12 +8915,17 @@ Shader "GPUTerrain"
              float3 positionOS : POSITION;
              float3 normalOS : NORMAL;
              float4 tangentOS : TANGENT;
-            uint instanceID : INSTANCEID_SEMANTIC;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : INSTANCEID_SEMANTIC;
+            #endif
         };
         struct VaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
+             float3 positionRWS;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
              float4 SplatMapColor;
         };
         struct VertexDescriptionInputs
@@ -7316,13 +8937,17 @@ Shader "GPUTerrain"
         struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
              float4 SplatMapColor;
         };
         struct PackedVaryingsMeshToPS
         {
             SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
-            uint instanceID : CUSTOM_INSTANCE_ID;
-             float4 interp0 : INTERP0;
+            #if UNITY_ANY_INSTANCING_ENABLED
+             uint instanceID : CUSTOM_INSTANCE_ID;
+            #endif
+             float3 interp0 : INTERP0;
+             float4 interp1 : INTERP1;
         };
 
             PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
@@ -7330,10 +8955,11 @@ Shader "GPUTerrain"
             PackedVaryingsMeshToPS output;
             ZERO_INITIALIZE(PackedVaryingsMeshToPS, output);
             output.positionCS = input.positionCS;
+            output.interp0.xyz =  input.positionRWS;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.interp0.xyzw =  input.SplatMapColor;
+            output.interp1.xyzw =  input.SplatMapColor;
             return output;
         }
 
@@ -7341,10 +8967,11 @@ Shader "GPUTerrain"
         {
             VaryingsMeshToPS output;
             output.positionCS = input.positionCS;
+            output.positionRWS = input.interp0.xyz;
             #if UNITY_ANY_INSTANCING_ENABLED
             output.instanceID = input.instanceID;
             #endif
-            output.SplatMapColor = input.interp0.xyzw;
+            output.SplatMapColor = input.interp1.xyzw;
             return output;
         }
 
@@ -7362,6 +8989,22 @@ Shader "GPUTerrain"
         #else
             Out = 0;
         #endif
+        }
+
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
         }
 
             // Graph Vertex
@@ -7404,14 +9047,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(IN.SplatMapColor.xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(IN.SplatMapColor, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -7482,6 +9228,7 @@ Shader "GPUTerrain"
             output.tangentToWorld = k_identity3x3;
             output.positionSS = input.positionCS;       // input.positionCS is SV_Position
 
+            output.positionRWS = input.positionRWS;
 
         #ifdef HAVE_VFX_MODIFICATION
             // FragInputs from VFX come from two places: Interpolator or CBuffer.
@@ -7511,6 +9258,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             output.SplatMapColor = input.customInterpolators.SplatMapColor;
@@ -7903,6 +9651,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -7962,6 +9711,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -7972,6 +9734,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -7999,7 +9786,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RayTracingCommon.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -8007,6 +9794,7 @@ Shader "GPUTerrain"
             struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
 
             //Interpolator Packs: <None>
@@ -8016,7 +9804,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             // GraphVertex: <None>
@@ -8037,14 +9840,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -8060,6 +9966,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
@@ -8394,6 +10301,7 @@ Shader "GPUTerrain"
             // Defines
 
             // Attribute
+            #define VARYINGS_NEED_POSITION_WS
 
 
 
@@ -8423,6 +10331,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -8482,6 +10391,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -8492,6 +10414,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -8516,7 +10463,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RayTracingCommon.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -8524,6 +10471,7 @@ Shader "GPUTerrain"
             struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
 
             //Interpolator Packs: <None>
@@ -8533,7 +10481,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             // GraphVertex: <None>
@@ -8554,14 +10517,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -8577,6 +10643,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
@@ -8957,6 +11024,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -9016,6 +11084,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -9026,6 +11107,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -9053,7 +11159,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RayTracingCommon.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -9061,6 +11167,7 @@ Shader "GPUTerrain"
             struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
 
             //Interpolator Packs: <None>
@@ -9070,7 +11177,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             // GraphVertex: <None>
@@ -9091,14 +11213,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -9114,6 +11339,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
@@ -9494,6 +11720,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -9553,6 +11780,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -9563,6 +11803,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -9588,7 +11853,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RayTracingCommon.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -9596,6 +11861,7 @@ Shader "GPUTerrain"
             struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
 
             //Interpolator Packs: <None>
@@ -9605,7 +11871,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             // GraphVertex: <None>
@@ -9626,14 +11907,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -9649,6 +12033,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
@@ -10021,6 +12406,7 @@ Shader "GPUTerrain"
             #endif
 
             // Specific Material Define
+        #define _AMBIENT_OCCLUSION 1
         #define _SPECULAR_OCCLUSION_FROM_AO 1
         #define _ENERGY_CONSERVING_SPECULAR 1
 
@@ -10080,6 +12466,19 @@ Shader "GPUTerrain"
 
             // -- Graph Properties
             CBUFFER_START(UnityPerMaterial)
+        float4 LayerMask3_TexelSize;
+        float4 LayerMask2_TexelSize;
+        float4 LayerNormal3_TexelSize;
+        float4 LayerNormal2_TexelSize;
+        float4 Layer0_TexelSize;
+        float4 Layer1_TexelSize;
+        float4 Layer2_TexelSize;
+        float4 Layer3_TexelSize;
+        float UVXZScale;
+        float4 LayerNormal1_TexelSize;
+        float4 LayerNormal0_TexelSize;
+        float4 LayerMask1_TexelSize;
+        float4 LayerMask0_TexelSize;
         float4 _EmissionColor;
         float _UseShadowThreshold;
         float4 _DoubleSidedConstants;
@@ -10090,6 +12489,31 @@ Shader "GPUTerrain"
         CBUFFER_END
 
         // Object and Global properties
+        SAMPLER(SamplerState_Linear_Repeat);
+        TEXTURE2D(LayerMask3);
+        SAMPLER(samplerLayerMask3);
+        TEXTURE2D(LayerMask2);
+        SAMPLER(samplerLayerMask2);
+        TEXTURE2D(LayerNormal3);
+        SAMPLER(samplerLayerNormal3);
+        TEXTURE2D(LayerNormal2);
+        SAMPLER(samplerLayerNormal2);
+        TEXTURE2D(Layer0);
+        SAMPLER(samplerLayer0);
+        TEXTURE2D(Layer1);
+        SAMPLER(samplerLayer1);
+        TEXTURE2D(Layer2);
+        SAMPLER(samplerLayer2);
+        TEXTURE2D(Layer3);
+        SAMPLER(samplerLayer3);
+        TEXTURE2D(LayerNormal1);
+        SAMPLER(samplerLayerNormal1);
+        TEXTURE2D(LayerNormal0);
+        SAMPLER(samplerLayerNormal0);
+        TEXTURE2D(LayerMask1);
+        SAMPLER(samplerLayerMask1);
+        TEXTURE2D(LayerMask0);
+        SAMPLER(samplerLayerMask0);
 
             // -- Property used by ScenePickingPass
             #ifdef SCENEPICKINGPASS
@@ -10116,7 +12540,7 @@ Shader "GPUTerrain"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RayTracingCommon.hlsl"
         #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
-        	// GraphIncludes: <None>
+        	#include "Assets/Shaders/TerrainShading/HeightBlend.hlsl"
 
             // --------------------------------------------------
             // Structs and Packing
@@ -10124,6 +12548,7 @@ Shader "GPUTerrain"
             struct SurfaceDescriptionInputs
         {
              float3 TangentSpaceNormal;
+             float3 ObjectSpacePosition;
         };
 
             //Interpolator Packs: <None>
@@ -10133,7 +12558,22 @@ Shader "GPUTerrain"
 
 
             // Graph Functions
-            // GraphFunctions: <None>
+            
+        void Unity_Combine_float(float R, float G, float B, float A, out float4 RGBA, out float3 RGB, out float2 RG)
+        {
+            RGBA = float4(R, G, B, A);
+            RGB = float3(R, G, B);
+            RG = float2(R, G);
+        }
+
+        void Unity_Divide_float2(float2 A, float2 B, out float2 Out)
+        {
+            Out = A / B;
+        }
+
+        void GetMixColor_float(float4 layer0, float4 layer1, float4 layer2, float4 layer3, float4 mask, out float4 ret){
+            ret = mask.r*layer0+mask.g*layer1+mask.b*layer2+mask.a*layer3;
+        }
 
             // Graph Vertex
             // GraphVertex: <None>
@@ -10154,14 +12594,117 @@ Shader "GPUTerrain"
         SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
         {
             SurfaceDescription surface = (SurfaceDescription)0;
-            surface.BaseColor = (float3(float4(0,0,0,0).xyz));
+            UnityTexture2D _Property_3d7142ef79234a0ba6cda49555992a80_Out_0 = UnityBuildTexture2DStructNoScale(Layer0);
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1 = IN.ObjectSpacePosition[0];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_G_2 = IN.ObjectSpacePosition[1];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3 = IN.ObjectSpacePosition[2];
+            float _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_A_4 = 0;
+            float4 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4;
+            float3 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5;
+            float2 _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6;
+            Unity_Combine_float(_Split_3335daa3a4b34f69a62c9c8a1c6f39b2_R_1, _Split_3335daa3a4b34f69a62c9c8a1c6f39b2_B_3, 0, 0, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGBA_4, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RGB_5, _Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6);
+            float _Property_8984e4bf1c26459280f9fece3c52167c_Out_0 = UVXZScale;
+            float2 _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2;
+            Unity_Divide_float2(_Combine_e64bd4e93e924df29096b2b8cd45ebf2_RG_6, (_Property_8984e4bf1c26459280f9fece3c52167c_Out_0.xx), _Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2);
+            float4 _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0 = SAMPLE_TEXTURE2D(_Property_3d7142ef79234a0ba6cda49555992a80_Out_0.tex, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.samplerstate, _Property_3d7142ef79234a0ba6cda49555992a80_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_R_4 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.r;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_G_5 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.g;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_B_6 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.b;
+            float _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_A_7 = _SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0.a;
+            UnityTexture2D _Property_1bce6ca387e847e1a43a4534686b655f_Out_0 = UnityBuildTexture2DStructNoScale(Layer1);
+            float4 _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1bce6ca387e847e1a43a4534686b655f_Out_0.tex, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.samplerstate, _Property_1bce6ca387e847e1a43a4534686b655f_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_R_4 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.r;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_G_5 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.g;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_B_6 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.b;
+            float _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_A_7 = _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0.a;
+            UnityTexture2D _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0 = UnityBuildTexture2DStructNoScale(Layer2);
+            float4 _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.tex, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.samplerstate, _Property_b79fba6b5b1f40b88b38803dad2bb2e5_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_R_4 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.r;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_G_5 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.g;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_B_6 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.b;
+            float _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_A_7 = _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0.a;
+            UnityTexture2D _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0 = UnityBuildTexture2DStructNoScale(Layer3);
+            float4 _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0 = SAMPLE_TEXTURE2D(_Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.tex, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.samplerstate, _Property_8e8b4d9a2dfc42148eb69519397ecebc_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_R_4 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.r;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_G_5 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.g;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_B_6 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.b;
+            float _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_A_7 = _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0.a;
+            float4 _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1;
+            ComputeMaskWeights_float(float4(0,0,0,0), _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1);
+            float4 _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5;
+            GetMixColor_float(_SampleTexture2D_e9814dfd60a1484aa0a1c60468b6c7e6_RGBA_0, _SampleTexture2D_c46003ed12e7476ea3f5aa264ab91aa8_RGBA_0, _SampleTexture2D_08648f21152040a2a78ea72af8cccc09_RGBA_0, _SampleTexture2D_d5c06d7bb1d34364bbb23f5840294bec_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5);
+            UnityTexture2D _Property_e67647d6cf1b44bebf91845a255b522c_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask0);
+            float4 _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0 = SAMPLE_TEXTURE2D(_Property_e67647d6cf1b44bebf91845a255b522c_Out_0.tex, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.samplerstate, _Property_e67647d6cf1b44bebf91845a255b522c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0);
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_R_4 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.r;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_G_5 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.g;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_B_6 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.b;
+            float _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_A_7 = _SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0.a;
+            UnityTexture2D _Property_75d4521a27cb403399759cefa7be71f2_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask1);
+            float4 _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0 = SAMPLE_TEXTURE2D(_Property_75d4521a27cb403399759cefa7be71f2_Out_0.tex, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.samplerstate, _Property_75d4521a27cb403399759cefa7be71f2_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0);
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_R_4 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.r;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_G_5 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.g;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_B_6 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.b;
+            float _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_A_7 = _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0.a;
+            UnityTexture2D _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask2);
+            float4 _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0 = SAMPLE_TEXTURE2D(_Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.tex, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.samplerstate, _Property_f4ae055a87ef48cb8df5c603ca6f72b0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0);
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_R_4 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.r;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_G_5 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.g;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_B_6 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.b;
+            float _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_A_7 = _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0.a;
+            UnityTexture2D _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0 = UnityBuildTexture2DStructNoScale(LayerMask3);
+            float4 _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0 = SAMPLE_TEXTURE2D(_Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.tex, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.samplerstate, _Property_b8f1cfb1112b4d2e8e2fe919f5003fb3_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0);
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_R_4 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.r;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_G_5 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.g;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_B_6 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.b;
+            float _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_A_7 = _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5;
+            GetMixColor_float(_SampleTexture2D_ad0e97ddafd44e25b5c5626c12b0f980_RGBA_0, _SampleTexture2D_f725e3c8d96343d5a5c6f18f13744303_RGBA_0, _SampleTexture2D_86f5c7b3458644cb86bc257811ddf248_RGBA_0, _SampleTexture2D_6f5eeba2c68a4fb68901e97fbb0d0c4f_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5);
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[0];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[1];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_B_3 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[2];
+            float _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4 = _GetMixColorCustomFunction_b8f086e224444f55985dea5740d25d35_ret_5[3];
+            UnityTexture2D _Property_42e52c243a994f04944481ff3627fc2c_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal0);
+            float4 _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0 = SAMPLE_TEXTURE2D(_Property_42e52c243a994f04944481ff3627fc2c_Out_0.tex, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.samplerstate, _Property_42e52c243a994f04944481ff3627fc2c_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0);
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_R_4 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.r;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_G_5 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.g;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_B_6 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.b;
+            float _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_A_7 = _SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0.a;
+            UnityTexture2D _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal1);
+            float4 _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.tex, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.samplerstate, _Property_1e7513acda3b4b20a5a028d0da4bcfb0_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0);
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_R_4 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.r;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_G_5 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.g;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_B_6 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.b;
+            float _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_A_7 = _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0.a;
+            UnityTexture2D _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal2);
+            float4 _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0 = SAMPLE_TEXTURE2D(_Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.tex, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.samplerstate, _Property_a787f1642c6d4570af8ae47ea63a59ed_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0);
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_R_4 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.r;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_G_5 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.g;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_B_6 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.b;
+            float _SampleTexture2D_163e9437f1b0478882988314d38ee115_A_7 = _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0.a;
+            UnityTexture2D _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0 = UnityBuildTexture2DStructNoScale(LayerNormal3);
+            float4 _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0 = SAMPLE_TEXTURE2D(_Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.tex, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.samplerstate, _Property_1443e12ec6544d2c8e8dcc71d67adb04_Out_0.GetTransformedUV(_Divide_2b19f4036ccd4361a63d4aef253b5c58_Out_2));
+            _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.rgb = UnpackNormal(_SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0);
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_R_4 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.r;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_G_5 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.g;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_B_6 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.b;
+            float _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_A_7 = _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0.a;
+            float4 _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5;
+            GetMixColor_float(_SampleTexture2D_09f453d71d244dff9a761a53e5f7f87a_RGBA_0, _SampleTexture2D_69245e2607bb41f8afe7fd4d9a2d2b58_RGBA_0, _SampleTexture2D_163e9437f1b0478882988314d38ee115_RGBA_0, _SampleTexture2D_67a95b0853a741c98efcb0eec7199491_RGBA_0, _ComputeMaskWeightsCustomFunction_2ff72795e9b5407297b2df41096da46a_outWeights_1, _GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5);
+            surface.BaseColor = (_GetMixColorCustomFunction_ab0fd06a3e3443738870739da9c81d7c_ret_5.xyz);
             surface.Emission = float3(0, 0, 0);
             surface.Alpha = 1;
             surface.BentNormal = IN.TangentSpaceNormal;
-            surface.Smoothness = 0.5;
-            surface.Occlusion = 1;
-            surface.NormalTS = IN.TangentSpaceNormal;
-            surface.Metallic = 0;
+            surface.Smoothness = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_A_4;
+            surface.Occlusion = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_G_2;
+            surface.NormalTS = (_GetMixColorCustomFunction_a7fa1d586f38404bbb9364512cf2c111_ret_5.xyz);
+            surface.Metallic = _Split_5ce627b662cd42d8a3d1d1cb1f2a3ea0_R_1;
             return surface;
         }
 
@@ -10177,6 +12720,7 @@ Shader "GPUTerrain"
             #else
             #endif
             output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+            output.ObjectSpacePosition =         TransformWorldToObject(input.positionRWS);
 
             // splice point to copy frag inputs custom interpolator pack into the SDI
             /* WARNING: $splice Could not find named fragment 'CustomInterpolatorCopyToSDI' */
