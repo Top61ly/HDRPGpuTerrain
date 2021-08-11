@@ -26,7 +26,7 @@ float4 ApplyHeightBlend(float4 heights, float4 blendMask, float heightTransition
     // First we make every value positive by substracting the minimum value.
     // Otherwise multiplicating by blendMask can invert negative heights.
     // For example, 2 heights value of -10.0 and -5 multiplied by blend mask 0.1 and 1.0 (intent is to give LESS importance to the first value) makes the first value heigher
-    float4 maskedHeights = (heights - GetMinHeight(heights)) * blendMask.argb;
+    float4 maskedHeights = (heights - GetMinHeight(heights)) * blendMask.rgba;
 
     float maxHeight = GetMaxHeight(maskedHeights);
     // Make sure that transition is not zero otherwise the next computation will be wrong.
@@ -37,13 +37,13 @@ float4 ApplyHeightBlend(float4 heights, float4 blendMask, float heightTransition
     // Then we clamp this to zero and normalize everything so that highest layer has a value of 1.
     maskedHeights = maskedHeights - maxHeight.xxxx;
     // We need to add an epsilon here for active layers (hence the blendMask again) so that at least a layer shows up if everything's too low.
-    maskedHeights = (max(0, maskedHeights + transition) + 1e-6) * blendMask.argb;
+    maskedHeights = (max(0, maskedHeights + transition) + 1e-6) * blendMask.rgba;
 
     // Normalize
     maxHeight = GetMaxHeight(maskedHeights);
     maskedHeights = maskedHeights / max(maxHeight.xxxx, 1e-6);
 
-    return maskedHeights.yzwx;
+    return maskedHeights.xyzw;
 }
 
 void ComputeMaskWeights(float4 inputMasks, out float4 outWeights)
@@ -60,7 +60,7 @@ void ComputeMaskWeights(float4 inputMasks, out float4 outWeights)
     // If a top layer doesn't use the full weight, the remaining can be use by the following layer.
     float weightsSum = 0.0;
 
-    UNITY_UNROLL
+    [unroll]
     for (int i = 3; i >= 0; --i)
     {
         outWeights[i] = min(masks[i], (1.0 - weightsSum));
@@ -71,4 +71,10 @@ void ComputeMaskWeights(float4 inputMasks, out float4 outWeights)
 void ComputeMaskWeights_float(float4 inputMasks, out float4 outWeights)
 {
     ComputeMaskWeights(inputMasks, outWeights);
+}
+
+void ComputeHeightBlendMask_float(float4 heights, float4 inputMasks, float heightTransition, out float4 outWeights)
+{
+    float4 mask = ApplyHeightBlend(heights, inputMasks, heightTransition);
+    ComputeMaskWeights(mask, outWeights);
 }
