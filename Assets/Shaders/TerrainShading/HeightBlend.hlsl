@@ -68,6 +68,20 @@ void ComputeMaskWeights(float4 inputMasks, out float4 outWeights)
     }
 }
 
+void HeightBlend2Layer_float(float2 heights, float2 blendMask, float heightTransition, out float2 mask)
+{
+    float2 maskedHeights = (heights -min(heights.x,heights.y)) * blendMask.yx;
+    float maxHeight = max(maskedHeights.x, maskedHeights.y);
+    float transition = max(heightTransition, 1e-5);
+
+    maskedHeights = maskedHeights - maxHeight.xx;
+
+    maskedHeights = (max(0, maskedHeights+transition)+1e-6) * blendMask.yx;
+    maxHeight = max(maskedHeights.x,maskedHeights.y);
+    maskedHeights = maskedHeights / max(maxHeight.xx, 1e-6);
+    mask = maskedHeights.xy;
+}
+
 void ComputeMaskWeights_float(float4 inputMasks, out float4 outWeights)
 {
     ComputeMaskWeights(inputMasks, outWeights);
