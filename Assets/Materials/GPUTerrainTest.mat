@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-1997992130460620029
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da692e001514ec24dbc4cca1949ff7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 12
 --- !u!21 &2100000
 Material:
   serializedVersion: 6
@@ -7,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SlopeShading
-  m_Shader: {fileID: -6465566751694194690, guid: 407cc1e37a7df4c2185e3f631eccba62, type: 3}
+  m_Name: GPUTerrainTest
+  m_Shader: {fileID: -6465566751694194690, guid: f65a864ab4b89f349abc3c0781080617, type: 3}
   m_ShaderKeywords: _DISABLE_SSR_TRANSPARENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -26,28 +39,76 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - Albedo1:
-        m_Texture: {fileID: 2800000, guid: 7f3df385222f5b1428f6a156037deb5e, type: 3}
+    - BaseMask:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Mask1:
-        m_Texture: {fileID: 2800000, guid: 3c6d7b80bcc59ae448166eacd4ad79b0, type: 3}
+    - BaseNormal:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - Normal1:
-        m_Texture: {fileID: 2800000, guid: 1ff4687a05ada474ca7eaf3010a871f6, type: 3}
+    - BaseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Layer0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Layer1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Layer2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - Layer3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerMask0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerMask1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerMask2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerMask3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerNormal0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerNormal1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerNormal2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LayerNormal3:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - SlopeMask:
-        m_Texture: {fileID: 2800000, guid: 44f7e6aa71506b041ac0a60db8868a44, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - SlopeNormal:
-        m_Texture: {fileID: 2800000, guid: f45c3bd09301cc64783afc31dfca026b, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - SlopeTexture:
-        m_Texture: {fileID: 2800000, guid: f7dd726c93b8f17418ea3be3f6768909, type: 3}
+    - SlopeTex:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AnisotropyMap:
@@ -144,11 +205,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - DispalcementScale: 80
-    - NoiseScale: 0.43
-    - SHOWBASEBLENDMASK: 0
-    - TextureUV: 0.2
-    - UVScale: 15.84
+    - PROCEDURALDRAW: 0
+    - PROCEDURALGENERATE: 0
+    - UVXZScale: 1
     - _AORemapMax: 1
     - _AORemapMin: 0
     - _ATDistance: 1
@@ -264,11 +323,20 @@ Material:
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
-    - heightTransition: 0.11
-    - powScale: 0.08
+    - heightTransition: 0
     m_Colors:
+    - HeightRemap: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap0: {r: -1, g: 1, b: 0, a: 0}
     - HeightRemap1: {r: -1, g: 1, b: 0, a: 0}
-    - SlopeHeightRemap: {r: 0.56, g: 1, b: 0, a: 0}
+    - HeightRemap2: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap3: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap4: {r: -1, g: 1, b: 0, a: 0}
+    - Tiling_Offset: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset0: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset1: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset2: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset3: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset4: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
@@ -286,16 +354,3 @@ Material:
     - _UVMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &2074861022250828123
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da692e001514ec24dbc4cca1949ff7e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 12

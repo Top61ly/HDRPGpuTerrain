@@ -47,13 +47,3 @@ float TerrainHeight(float x, float z)
    int biome = GetBiome(x,z);
    return GetBiomeHeight(biome,x,z);
 }
-
-void TerrainHeight_float(float x, float z, out float height)
-{
-    height = TerrainHeight(x,z)*200.0f;
-}
-
-void TerrainColor_float(float x, float z, out float4 color)
-{
-    color = GetBlendMask(x,z);
-}

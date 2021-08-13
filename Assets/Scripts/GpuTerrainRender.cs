@@ -20,7 +20,7 @@ public class GpuTerrainRender : MonoBehaviour
         args[3] = (uint)terrainPatch.GetBaseVertex(0);
         m_IndirectArgs.SetData(args);
 
-        instanceMaterial.SetTexture("_PerlinTex", perlinTexture);
+       Shader.SetGlobalTexture("_PerlinTex", perlinTexture);
     }
 
     private void Update() 

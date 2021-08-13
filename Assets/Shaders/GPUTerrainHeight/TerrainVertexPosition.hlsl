@@ -75,6 +75,22 @@ void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, o
     color = GetBlendMask(oposOS.x, oposOS.z);
 }
 
+void GetTerrainVertexbyWorldPos_float(float3 posOS, out float3 oposOS, out float4 color)
+{
+    oposOS = posOS;
+    oposOS.y = TerrainSmoothHeight(posOS.x, posOS.z) * 200.0f;
+    color = GetBlendMask(oposOS.x, oposOS.z);
+}
+void TerrainHeight_float(float x, float z, out float height)
+{
+    height = TerrainHeight(x,z)*200.0f;
+}
+
+void TerrainColor_float(float x, float z, out float4 color)
+{
+    color = GetBlendMask(x,z);
+}
+
 void setupProcedural()
 {
 
