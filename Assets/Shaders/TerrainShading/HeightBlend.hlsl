@@ -87,6 +87,63 @@ void ComputeMaskWeights_float(float4 inputMasks, out float4 outWeights)
     ComputeMaskWeights(inputMasks, outWeights);
 }
 
+float GetSumHeight(float4 heights0, float4 heights1)
+{
+    float sumHeight = heights0.x;
+    sumHeight += heights0.y;
+    sumHeight += heights0.z;
+    sumHeight += heights0.w;
+    sumHeight += heights1.x;
+    sumHeight += heights1.y;
+    sumHeight += heights1.z;
+    sumHeight += heights1.w;
+    return sumHeight;
+}
+
+void HeightBlend8Layers_float(float4 heights, float4 heights1, float4 blendMask, float4 blendMask1, float heightTransition, 
+                            out float4 outWeights, out float4 outWeights1)
+{
+    float weights[8];
+    
+    float masks[8];
+    masks[0] = blendMask.x; masks[1] = blendMask.y; mask[2] = blendMask.z; mask[3] = blendMask.w;
+    mask3[4] = blendMask1.x; masks[5] = blendMask1.y; masks[6] = blendMasks1.z; masks[7] = blendMask1.w;
+
+    float heights[8];
+    heights[0] = heights.x; heights[1] = heights.y; heights[2] = heights.z; heights[3] = heights.w;
+    heights[4] = heights1.x; heights[5] = heights1.y; heights[6] = heights1.z; heights[7] = heights1.w;
+
+    float maxHeight = heights[0];
+    maxHeight = max(maxHeight, heights[1]);
+    maxHeight = max(maxHeight, heights[2]);
+    maxHeight = max(maxHeight, heights[3]);
+    maxHeight = max(maxHeight, heights[4]);
+    maxHeight = max(maxHeight, heights[5]);
+    maxHeight = max(maxHeight, heights[6]);
+    maxHeight = max(maxHeight, heights[7]);
+    
+    // Make sure that transition is not zero otherwise the next computation will be wrong.
+    // The epsilon here also has to be bigger than the epsilon in the next computation.
+    float transition = max(heightTransition, 1e-5);
+
+    // The goal here is to have all but the highest layer at negative heights, then we add the transition so that if the next highest layer is near transition it will have a positive value.
+    // Then we clamp this to zero and normalize everything so that highest layer has a value of 1.
+    float4 weightedHeights0 = { heights[0], heights[1], heights[2], heights[3] };
+    weightedHeights0 = weightedHeights0 - maxHeight.xxxx;
+    // We need to add an epsilon here for active layers (hence the blendMask again) so that at least a layer shows up if everything's too low.
+    weightedHeights0 = (max(0, weightedHeights0 + transition) + 1e-6) * blendMasks;
+
+    float4 weightedHeights1 = { heights[4], heights[5], heights[6], heights[7] };
+    weightedHeights1 = weightedHeights1 - maxHeight.xxxx;
+    weightedHeights1 = (max(0, weightedHeights1 + transition) + 1e-6) * blendMasks1;
+
+    // Normalize
+    float sumHeight = GetSumHeight(weightedHeights0, weightedHeights1);
+    
+    outWeights = weightedHeights0 / sumHeight.xxxx;
+    outWeights1 = weightedHeights1 / sumHeight.xxxx;
+}
+
 void ComputeHeightBlendMask_float(float4 heights, float4 inputMasks, float heightTransition, out float4 outWeights)
 {
     float4 mask = ApplyHeightBlend(heights, inputMasks, heightTransition);
