@@ -68,6 +68,32 @@ void ComputeMaskWeights(float4 inputMasks, out float4 outWeights)
     }
 }
 
+void Compute8LayerMaskWeights(float4 blendMasks0, float4 blendMasks1, out float4 outWeights0, out float4 outWeights1)
+{
+    float weights[8];
+    weights[0] = blendMasks0.x;
+    weights[1] = blendMasks0.y;
+    weights[2] = blendMasks0.z;
+    weights[3] = blendMasks0.w;
+    weights[4] = blendMasks1.x;
+    weights[5] = blendMasks1.y;
+    weights[6] = blendMasks1.z;
+    weights[7] = blendMasks1.w;
+    
+    float outWeights[8];
+
+    float3 weightsSum = 0;
+    [unroll]
+    for (int i = 8; i >= 0; --i)
+    {
+        outWeights[i] = min(weights[i], (1.0 - weightsSum));
+        weightsSum = saturate(weightsSum + weights[i]);
+    }
+
+    outWeights0 = {outWeights[0], outWeights0[1], outWeights0[2], outWeights0[3]};
+    outWeights1 = {outWeights[4], outWeights[5], outWeights[6], outWeights[7]};
+}
+
 void HeightBlend2Layer_float(float2 heights, float2 blendMask, float heightTransition, out float2 mask)
 {
     float2 maskedHeights = (heights -min(heights.x,heights.y)) * blendMask.yx;
@@ -103,8 +129,6 @@ float GetSumHeight(float4 heights0, float4 heights1)
 void HeightBlend8Layers_float(float4 heights, float4 heights1, float4 blendMask, float4 blendMask1, float heightTransition, 
                             out float4 outWeights, out float4 outWeights1)
 {
-    float weights[8];
-    
     float masks[8];
     masks[0] = blendMask.x; masks[1] = blendMask.y; mask[2] = blendMask.z; mask[3] = blendMask.w;
     mask3[4] = blendMask1.x; masks[5] = blendMask1.y; masks[6] = blendMasks1.z; masks[7] = blendMask1.w;
@@ -139,9 +163,7 @@ void HeightBlend8Layers_float(float4 heights, float4 heights1, float4 blendMask,
 
     // Normalize
     float sumHeight = GetSumHeight(weightedHeights0, weightedHeights1);
-    
-    outWeights = weightedHeights0 / sumHeight.xxxx;
-    outWeights1 = weightedHeights1 / sumHeight.xxxx;
+    Compute8LayerMaskWeights(weightedHeights0 / sumHeight.xxxx,weightedHeights1 / sumHeight.xxxx, outWeights, outWeights1);
 }
 
 void ComputeHeightBlendMask_float(float4 heights, float4 inputMasks, float heightTransition, out float4 outWeights)
