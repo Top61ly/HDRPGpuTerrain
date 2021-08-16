@@ -40,7 +40,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - BaseMask:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 58a4a6310bd23844bae88d82f7916059, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - BaseNormal:
@@ -48,39 +48,39 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - BaseTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 6bcc65b7c6e3a0b448d7801bfc56842f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Layer0:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 7f3df385222f5b1428f6a156037deb5e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Layer1:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 0cc0777f7d4a3444380eb084d74396b5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Layer2:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 43b54d39e0a4c4d47bef645abec127f1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Layer3:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: f7dd726c93b8f17418ea3be3f6768909, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask0:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 3c6d7b80bcc59ae448166eacd4ad79b0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask1:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 1a4d9960438e8f242a5155b27813efe9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask2:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: ff77b812a1621e74694371cb173618ef, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask3:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 44f7e6aa71506b041ac0a60db8868a44, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerNormal0:
@@ -205,9 +205,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - COLORTYPE: 0
     - PROCEDURALDRAW: 0
     - PROCEDURALGENERATE: 0
-    - UVXZScale: 1
+    - UVXZScale: 5
     - _AORemapMax: 1
     - _AORemapMin: 0
     - _ATDistance: 1
@@ -323,7 +324,7 @@ Material:
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
-    - heightTransition: 0
+    - heightTransition: 0.1
     m_Colors:
     - HeightRemap: {r: -1, g: 1, b: 0, a: 0}
     - HeightRemap0: {r: -1, g: 1, b: 0, a: 0}

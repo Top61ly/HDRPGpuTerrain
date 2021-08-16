@@ -82,16 +82,20 @@ void Compute8LayerMaskWeights(float4 blendMasks0, float4 blendMasks1, out float4
     
     float outWeights[8];
 
-    float3 weightsSum = 0;
+    float weightsSum = 0;
     [unroll]
-    for (int i = 8; i >= 0; --i)
+    for (int i = 7; i >= 0; --i)
     {
         outWeights[i] = min(weights[i], (1.0 - weightsSum));
         weightsSum = saturate(weightsSum + weights[i]);
     }
 
-    outWeights0 = {outWeights[0], outWeights0[1], outWeights0[2], outWeights0[3]};
-    outWeights1 = {outWeights[4], outWeights[5], outWeights[6], outWeights[7]};
+    float4  weights0 = { outWeights[0], outWeights[1], outWeights[2], outWeights[3] };
+    float4  weights1 = { outWeights[4], outWeights[5], outWeights[6], outWeights[7] };
+    outWeights0 = weights0;
+    outWeights1 = weights1;
+    //outWeights0 = {outWeights[0], outWeights[1], outWeights[2], outWeights[3]};
+    //outWeights1 = {outWeights[4], outWeights[5], outWeights[6], outWeights[7]};
 }
 
 void HeightBlend2Layer_float(float2 heights, float2 blendMask, float heightTransition, out float2 mask)
@@ -126,15 +130,30 @@ float GetSumHeight(float4 heights0, float4 heights1)
     return sumHeight;
 }
 
-void HeightBlend8Layers_float(float4 heights, float4 heights1, float4 blendMask, float4 blendMask1, float heightTransition, 
+void HeightBlend8Layers_float(float4 heights0, float4 heights1, float4 blendMask, float4 blendMask1, float heightTransition, 
                             out float4 outWeights, out float4 outWeights1)
 {
     float masks[8];
-    masks[0] = blendMask.x; masks[1] = blendMask.y; mask[2] = blendMask.z; mask[3] = blendMask.w;
-    mask3[4] = blendMask1.x; masks[5] = blendMask1.y; masks[6] = blendMasks1.z; masks[7] = blendMask1.w;
+    masks[0] = blendMask.x; masks[1] = blendMask.y; masks[2] = blendMask.z; masks[3] = blendMask.w;
+    masks[4] = blendMask1.x; masks[5] = blendMask1.y; masks[6] = blendMask1.z; masks[7] = blendMask1.w;
+    
+    float tmpWeights[8];
+    float weightsSum = 0;
+    [unroll]
+    for (int i = 7; i >= 0; --i)
+    {
+        tmpWeights[i] = min(masks[i], (1.0 - weightsSum));
+        weightsSum = saturate(weightsSum + masks[i]);
+    }
+
+    float4 tmpBlend0 = { tmpWeights[0], tmpWeights[1], tmpWeights[2], tmpWeights[3]};
+    float4 tmpBlend1 = { tmpWeights[4], tmpWeights[5], tmpWeights[6], tmpWeights[7]};
+
+    blendMask = tmpBlend0;
+    blendMask1 = tmpBlend1;
 
     float heights[8];
-    heights[0] = heights.x; heights[1] = heights.y; heights[2] = heights.z; heights[3] = heights.w;
+    heights[0] = heights0.x; heights[1] = heights0.y; heights[2] = heights0.z; heights[3] = heights0.w;
     heights[4] = heights1.x; heights[5] = heights1.y; heights[6] = heights1.z; heights[7] = heights1.w;
 
     float maxHeight = heights[0];
@@ -155,11 +174,11 @@ void HeightBlend8Layers_float(float4 heights, float4 heights1, float4 blendMask,
     float4 weightedHeights0 = { heights[0], heights[1], heights[2], heights[3] };
     weightedHeights0 = weightedHeights0 - maxHeight.xxxx;
     // We need to add an epsilon here for active layers (hence the blendMask again) so that at least a layer shows up if everything's too low.
-    weightedHeights0 = (max(0, weightedHeights0 + transition) + 1e-6) * blendMasks;
+    weightedHeights0 = (max(0, weightedHeights0 + transition) + 1e-6) * blendMask;
 
     float4 weightedHeights1 = { heights[4], heights[5], heights[6], heights[7] };
     weightedHeights1 = weightedHeights1 - maxHeight.xxxx;
-    weightedHeights1 = (max(0, weightedHeights1 + transition) + 1e-6) * blendMasks1;
+    weightedHeights1 = (max(0, weightedHeights1 + transition) + 1e-6) * blendMask1;
 
     // Normalize
     float sumHeight = GetSumHeight(weightedHeights0, weightedHeights1);
