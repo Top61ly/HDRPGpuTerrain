@@ -39,6 +39,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - BaseMask:
+        m_Texture: {fileID: 2800000, guid: 58a4a6310bd23844bae88d82f7916059, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - BaseNormal:
+        m_Texture: {fileID: 2800000, guid: dd1ad706663683546b665fd5b0286bbd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - BaseTex:
+        m_Texture: {fileID: 2800000, guid: 6bcc65b7c6e3a0b448d7801bfc56842f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Layer0:
         m_Texture: {fileID: 2800000, guid: 7f3df385222f5b1428f6a156037deb5e, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -85,6 +97,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     - LayerNormal3:
         m_Texture: {fileID: 2800000, guid: 703d1f74c69fc95498dcfd0afe8e1d61, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - SlopeMask:
+        m_Texture: {fileID: 2800000, guid: 44f7e6aa71506b041ac0a60db8868a44, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - SlopeNormal:
+        m_Texture: {fileID: 2800000, guid: f45c3bd09301cc64783afc31dfca026b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - SlopeTex:
+        m_Texture: {fileID: 2800000, guid: f7dd726c93b8f17418ea3be3f6768909, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AnisotropyMap:
@@ -181,6 +205,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - SlopePow: 1
     - UVXZScale: 10
     - _AORemapMax: 1
     - _AORemapMin: 0
@@ -299,6 +324,19 @@ Material:
     - _ZWrite: 1
     - heightTransition: 0.01
     m_Colors:
+    - HeightRemap: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap0: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap1: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap2: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap3: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap4: {r: -1, g: 1, b: 0, a: 0}
+    - SlopeRemap: {r: 0, g: 1, b: 0, a: 0}
+    - Tiling_Offset: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset0: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset1: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset2: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset3: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset4: {r: 1, g: 1, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

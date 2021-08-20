@@ -325,15 +325,15 @@ Material:
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
-    - heightTransition: 0.04
+    - heightTransition: 0
     m_Colors:
     - HeightRemap: {r: -5, g: -2, b: 0, a: 0}
     - HeightRemap0: {r: -1, g: 1, b: 0, a: 0}
     - HeightRemap1: {r: 1, g: 2, b: 0, a: 0}
     - HeightRemap2: {r: -1, g: 0, b: 0, a: 0}
     - HeightRemap3: {r: 1, g: 2, b: 0, a: 0}
-    - HeightRemap4: {r: -1, g: 1, b: 0, a: 0}
-    - SlopeRemap: {r: 0, g: 0, b: 0, a: 0}
+    - HeightRemap4: {r: 2, g: 5, b: 0, a: 0}
+    - SlopeRemap: {r: 0.5, g: 0.7, b: 0, a: 0}
     - Tiling_Offset: {r: 20, g: 20, b: 0, a: 0}
     - Tiling_Offset0: {r: 1, g: 1, b: 0, a: 0}
     - Tiling_Offset1: {r: 1, g: 1, b: 0, a: 0}
