@@ -58,7 +58,7 @@ void FixLodSeam(inout float3 vertexOS, RenderPatch patch)
     }
 }
 
-void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, out float4 color)
+void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, out float4 color, out float3 normal)
 {
     RenderPatch patch = renderPatchList[(int)instanceID];
     FixLodSeam(posOS, patch);
@@ -72,13 +72,28 @@ void GetTerrainVertex_float(float instanceID, float3 posOS, out float3 oposOS, o
     //oposOS.y = TerrainHeight(oposOS.x, oposOS.z)*200.0f;
     //oposOS.y = 0.0f;
     oposOS.y = TerrainSmoothHeight(oposOS.x, oposOS.z)*200.0f;
+    float gridSize = patchSize/16.0f;
+    float3 neighbour0 = float3(oposOS.x - gridSize, oposOS.y, oposOS.z);
+    float3 neighbour1 = float3(oposOS.x, oposOS.y, oposOS.z - gridSize);
+    neighbour0.y = TerrainSmoothHeight(neighbour0.x, neighbour0.z) * 200.0f;
+    neighbour1.y = TerrainSmoothHeight(neighbour1.x, neighbour1.z) * 200.0f;
+    normal = normalize(cross(neighbour1 - oposOS, neighbour0 - oposOS));
+
     color = GetBlendMask(oposOS.x, oposOS.z);
 }
 
-void GetTerrainVertexbyWorldPos_float(float3 posOS, out float3 oposOS, out float4 color)
+void GetTerrainVertexbyWorldPos_float(float3 posOS, out float3 oposOS, out float4 color, out float3 normal)
 {
     oposOS = posOS;
     oposOS.y = TerrainSmoothHeight(posOS.x, posOS.z) * 200.0f;
+
+    float3 neighbour0 = float3(posOS.x - 1, TerrainSmoothHeight(posOS.x - 1, posOS.z) * 200.0f, posOS.z);
+    float3 neighbour1 = float3(posOS.x, 0, posOS.z-1);
+    neighbour1.y = TerrainSmoothHeight(neighbour1.x, neighbour1.z) * 200.0f;
+
+    normal = normalize(cross(neighbour1 - oposOS, neighbour0 - oposOS));
+
+
     color = GetBlendMask(oposOS.x, oposOS.z);
 }
 void TerrainHeight_float(float x, float z, out float height)

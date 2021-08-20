@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Layer3:
-        m_Texture: {fileID: 2800000, guid: f7dd726c93b8f17418ea3be3f6768909, type: 3}
+        m_Texture: {fileID: 2800000, guid: fcd3993703e7d804bb735613d2a5189d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask0:
@@ -80,7 +80,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerMask3:
-        m_Texture: {fileID: 2800000, guid: 44f7e6aa71506b041ac0a60db8868a44, type: 3}
+        m_Texture: {fileID: 2800000, guid: e2a486d7d86a7e8469b15e7ae4d004f0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - LayerNormal0:
@@ -208,7 +208,8 @@ Material:
     - COLORTYPE: 0
     - PROCEDURALDRAW: 0
     - PROCEDURALGENERATE: 0
-    - UVXZScale: 4
+    - SlopePow: 1
+    - UVXZScale: 20
     - _AORemapMax: 1
     - _AORemapMin: 0
     - _ATDistance: 1
@@ -324,18 +325,19 @@ Material:
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
-    - heightTransition: 0.2
+    - heightTransition: 0.04
     m_Colors:
-    - HeightRemap: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap: {r: -5, g: -2, b: 0, a: 0}
     - HeightRemap0: {r: -1, g: 1, b: 0, a: 0}
-    - HeightRemap1: {r: -1, g: 1, b: 0, a: 0}
-    - HeightRemap2: {r: 1, g: 2, b: 0, a: 0}
-    - HeightRemap3: {r: -1, g: 1, b: 0, a: 0}
+    - HeightRemap1: {r: 1, g: 2, b: 0, a: 0}
+    - HeightRemap2: {r: -1, g: 0, b: 0, a: 0}
+    - HeightRemap3: {r: 1, g: 2, b: 0, a: 0}
     - HeightRemap4: {r: -1, g: 1, b: 0, a: 0}
-    - Tiling_Offset: {r: 1, g: 1, b: 0, a: 0}
+    - SlopeRemap: {r: 0, g: 0, b: 0, a: 0}
+    - Tiling_Offset: {r: 20, g: 20, b: 0, a: 0}
     - Tiling_Offset0: {r: 1, g: 1, b: 0, a: 0}
     - Tiling_Offset1: {r: 1, g: 1, b: 0, a: 0}
-    - Tiling_Offset2: {r: 1, g: 1, b: 0, a: 0}
+    - Tiling_Offset2: {r: 10, g: 10, b: 0, a: 0}
     - Tiling_Offset3: {r: 1, g: 1, b: 0, a: 0}
     - Tiling_Offset4: {r: 1, g: 1, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
